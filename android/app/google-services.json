@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "802368381127",
+    "firebase_url": "https://neutral-creep-dev.firebaseio.com",
+    "project_id": "neutral-creep-dev",
+    "storage_bucket": "neutral-creep-dev.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:802368381127:android:f37a95a8e9fd8e981bdee2",
+        "android_client_info": {
+          "package_name": "com.example.neutral_creep_dev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "802368381127-09gt1slijmg6ia21pfvupfst27kji7nb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.neutral_creep_dev",
+            "certificate_hash": "f61ed235e2be31ea5fc5ea6d62a4deec40aceb07"
+          }
+        },
+        {
+          "client_id": "802368381127-tmba445nr3bahd1na66067gi9jo1662h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDe_4xulSOsJZhHO8nW34u5bGHSsAX4O68"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "802368381127-tmba445nr3bahd1na66067gi9jo1662h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "802368381127-6kpite3gpi0lpnqcuicghvc6al3uim7v.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.neutralCreepDev"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
