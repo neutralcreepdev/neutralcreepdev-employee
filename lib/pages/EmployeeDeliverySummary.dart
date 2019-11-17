@@ -41,7 +41,7 @@ class _EmployeeDeliveryPageState extends State<EmployeeDeliveryPage> {
   String hashData(order) {
     //Date minus 4
     String newDate =
-        order.date.toString().substring(0, order.date.toString().length - 4);
+        order.date.toString().substring(0, order.date.toString().length);
     String data = order.orderID + newDate;
     print("order orderID: ${order.orderID}");
     print("order orderID: ${newDate}");
@@ -157,7 +157,7 @@ class _EmployeeDeliveryPageState extends State<EmployeeDeliveryPage> {
                               'status': 'Delivered'
                             });
                             print("check hashdata: ${hashData(order)}");
-                            Navigator.pop(context);
+                            Navigator.pop(context, {'flag': true});
                             Firestore.instance
                                 .collection('Staff')
                             .document(employee.id)

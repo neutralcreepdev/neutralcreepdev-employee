@@ -3,31 +3,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:neutral_creep_dev/models/delivery.dart';
-import 'package:neutral_creep_dev/pages/summaryPage.dart';
-import 'package:barcode_scan/barcode_scan.dart';
-import 'package:flutter/services.dart';
-import 'dart:developer';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'dart:async';
+//import 'dart:async';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../helpers/color_helper.dart';
-
-import '../models/cart.dart';
-import '../models/customer.dart';
 import '../models/employee.dart';
-import '../models/eWallet.dart';
-import '../models/transaction.dart';
 
 import '../services/authService.dart';
-import '../services/dbService.dart';
 import '../services/edbService.dart';
 
 import './profilePage.dart';
-import './eWalletPage.dart';
 import './startPage.dart';
-import './EmployeeDeliverySummary.dart';
 import './EmployeeDeliveryList.dart';
 import './EmployeeDeliveryHistory.dart';
 import './EmployeeDeliveryItems.dart';
@@ -92,17 +80,6 @@ class _HomePageState extends State<MyHomePage> {
     });
   }
 
-
-//  void initState() {
-//    time = Timer.periodic(Duration(milliseconds: 10), (Timer t) {
-//      setState(() {
-//        if(delivered==true)
-//          icon = Icon(FontAwesomeIcons.checkCircle, color: harlequinGreen);
-//        else
-//          icon = Icon(FontAwesomeIcons.timesCircle, color: heidelbergRed);
-//      });
-//    });
-//  }
   addDeliveryDialog(BuildContext context, Order order) {
     // set up the buttons
     Widget cancelButton = FlatButton(
@@ -129,6 +106,13 @@ class _HomePageState extends State<MyHomePage> {
           'dateOfTransaction': order.date,
           'customerId': order.customerId,
         });
+
+        await Firestore.instance
+            .collection('users')
+            .document(order.customerId)
+            .collection("Delivery")
+            .document(order.orderID)
+            .updateData({'status': "Delivering"});
 
         Navigator.pop(context);
 
@@ -181,48 +165,6 @@ class _HomePageState extends State<MyHomePage> {
         messageTextStyle: TextStyle(
             color: Colors.black, fontSize: 19.0, fontWeight: FontWeight.w600));
   }
-
-  Future _scanQR() async {
-    try {
-      String qrResult = await BarcodeScanner.scan();
-
-      setState(() {
-        result = qrResult;
-        Grocery temp = new Grocery();
-        if (temp.setGroceryWithStringInput(result)) {
-          temp.quantity = 1;
-          employee.currentCart.addGrocery(temp);
-        } else {
-          print("\n\n\n\n unknown \n\n\n\n\n");
-        }
-        //employee.currentOrders.addOrders(order1);
-      });
-    } on PlatformException catch (ex) {
-      if (ex.code == BarcodeScanner.CameraAccessDenied) {
-        setState(() {
-          result = "Camera permission was denied";
-          print("$result");
-        });
-      } else {
-        setState(() {
-          result = "Unknown Error $ex";
-          print("$result");
-        });
-      }
-    } on FormatException {
-      setState(() {
-        result = "You pressed the back button before scanning anything";
-        print("$result");
-      });
-    } catch (ex) {
-      setState(() {
-        result = "Unknown Error $ex";
-        print("$result");
-      });
-    }
-  }
-
-  final GlobalKey _menuKey = new GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -467,138 +409,4 @@ class _HomePageState extends State<MyHomePage> {
           }),
     );
   }
-
-//  Order order1 = new Order(
-//      orderID: "112233",
-//      name: "KENYON TAN",
-//      location: "NEW NEW STREET",
-//      unit: "#01-1234",
-//      postalCode: "112233"
-//  );
-//
-//  Order order2 = new Order(
-//      orderID: "112233",
-//      name: "KENYON TAN",
-//      location: "NEW NEW STREET",
-//      unit: "#01-1234",
-//      postalCode: "112233"
-//  );
-//
-//  Order order3 = new Order(
-//      orderID: "112233",
-//      name: "KENYON TAN",
-//      location: "NEW NEW STREET",
-//      unit: "#01-1234",
-//      postalCode: "112233"
-//  );
-
-//  var orderDb = [
-//    order1,
-//    order2,
-//    order3
-//  ];
-
-  Grocery item1 = new Grocery(
-      id: "1",
-      name: "Red Ball-Point Pencil",
-      description: "this is a pencil",
-      supplier: "Kenyon's Pencils Pte",
-      cost: 1.50,
-      imageURL:
-          "https://firebasestorage.googleapis.com/v0/b/neutral-creep-dev.appspot.com/o/apple.jpg?alt=media&token=43d25e60-a478-4e8d-9bcd-793aa918d84c");
-
-  Grocery item2 = new Grocery(
-      id: "2",
-      name: "elifford The Big Red Cock",
-      description: "this is a big red cock",
-      supplier: "ZP YAOZ CLUB HOUSE",
-      cost: 37.45);
-  Grocery item3 = new Grocery(
-      id: "3",
-      name: "Fuji Apple (Small)",
-      description: "this is an apple",
-      supplier: "Matts Farm (Japan)",
-      cost: 8.20);
-  Grocery item4 = new Grocery(
-      id: "4",
-      name: "Square Watermalon",
-      description: "this is a watermelon",
-      supplier: "RayRay's Weird & Wonderful Garden",
-      cost: 7.80);
-  Grocery item5 = new Grocery(
-      id: "5",
-      name: "1-Ply Tissue Packet",
-      description: "this is a tissue packet",
-      supplier: "Mama Cheap Cheap ABC",
-      cost: 0.50);
-
-  Grocery item6 = new Grocery(
-      id: "6",
-      name: "Red Ball-Point Pencil",
-      description: "this is a pencil",
-      supplier: "Kenyon's Pencils Pte",
-      cost: 1.50,
-      imageURL:
-          "https://firebasestorage.googleapis.com/v0/b/neutral-creep-dev.appspot.com/o/apple.jpg?alt=media&token=43d25e60-a478-4e8d-9bcd-793aa918d84c");
-
-  Grocery item7 = new Grocery(
-      id: "7",
-      name: "elifford The Big Red Cock",
-      description: "this is a big red cock",
-      supplier: "ZP YAOZ CLUB HOUSE",
-      cost: 37.45);
-  Grocery item8 = new Grocery(
-      id: "8",
-      name: "Fuji Apple (Small)",
-      description: "this is an apple",
-      supplier: "Matts Farm (Japan)",
-      cost: 8.20);
-  Grocery item9 = new Grocery(
-      id: "9",
-      name: "Square Watermalon",
-      description: "this is a watermelon",
-      supplier: "RayRay's Weird & Wonderful Garden",
-      cost: 7.80);
-  Grocery item10 = new Grocery(
-      id: "10",
-      name: "1-Ply Tissue Packet",
-      description: "this is a tissue packet",
-      supplier: "Mama Cheap Cheap ABC",
-      cost: 0.50);
-
-//  var cartDb = [
-//    item1,
-//    item2,
-//    item3,
-//    item4,
-//    item5,
-//    item6,
-//    item7,
-//    item8,
-//    item9,
-//    item10
-//  ];
-
-//                        onPressed: () {
-//    PurchaseTransaction transaction =
-//    new PurchaseTransaction(
-//    cart: employee.currentCart);
-//
-//    edb
-//        .getTransactionId(employee.id)
-//        .then((transactionId) {
-//    transaction.setId(
-//    transactionId.toString().padLeft(8, "0"));
-////                            Navigator.of(context)
-//////                                .push(MaterialPageRoute(
-//////                                builder: (context) => SummaryPage(
-//////                                  transaction: transaction,
-//////                                  employee: employee,
-//////                                  db: db,
-//////                                )))
-//////                                .then((value) {
-//////                              print("$value");
-//////                            });
-//    });
-//                        },
 }

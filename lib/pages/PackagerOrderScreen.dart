@@ -59,6 +59,8 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
   bool done = false;
   int initCount = 0;
   List<bool> itemsCheck;
+  bool validation = false;
+  bool lockerNum=false;
   TextEditingController lockerNo = new TextEditingController();
 
   //
@@ -95,26 +97,6 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
     return qn;
   }
 
-  int _selectedIndex = -1; //change to -1
-  bool _selected = false;
-
-  _setCardColor(int index) {
-    setState(() {
-      _selectedIndex = index;
-      _selected = true;
-    });
-  }
-
-//  void initState() {
-//    time = Timer.periodic(Duration(milliseconds: 10), (Timer t) {
-//      setState(() {
-//        if(delivered==true)
-//          icon = Icon(FontAwesomeIcons.checkCircle, color: harlequinGreen);
-//        else
-//          icon = Icon(FontAwesomeIcons.timesCircle, color: heidelbergRed);
-//      });
-//    });
-//  }
   addDeliveryDialog(BuildContext context, Order order) {
     // set up the buttons
     Widget cancelButton = FlatButton(
@@ -184,62 +166,36 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
             color: Colors.black, fontSize: 19.0, fontWeight: FontWeight.w600));
   }
 
-  bool allItemsPackaged(List<bool> itemsCheck) {
+  bool allItemsPackaged(
+      List<bool> itemsCheck, String collectType, bool lc) {
     bool temp = true;
-    for (int i = 0; i < itemsCheck.length; i++) {
-      if (itemsCheck[i] == false) temp = false;
+    if(collectType=="Self-Collect") {
+      for (int i = 0; i < itemsCheck.length; i++) {
+        if (itemsCheck[i] == false) temp = false;
+      }
+      if (temp == true) {
+        if (lc == false) temp = false;
+      }
+    } else {
+      for (int i = 0; i < itemsCheck.length; i++) {
+        if (itemsCheck[i] == false) temp = false;
+      }
     }
-    if(temp) {
-      if(lockerNo.text==null)
-        temp=false;
-      if(int.parse(lockerNo.text) > 100 || int.parse(lockerNo.text) < 0)
-        temp=false;
+    return temp;
+  }
+
+  bool lockerCheck(String lockerNum) {
+    //Fluttertoast.showToast(msg: "LOCKERNUM: ${lockerNum}");
+    bool temp = true;
+    if (lockerNum.length==0 || lockerNum.isEmpty||lockerNum==""||lockerNum==null) temp = false;
+
+
+    if (int.parse(lockerNum) > 100 || int.parse(lockerNum) < 1) {
+      temp = false;
     }
 
     return temp;
   }
-
-  Future _scanQR() async {
-    try {
-      String qrResult = await BarcodeScanner.scan();
-
-      setState(() {
-        result = qrResult;
-        Grocery temp = new Grocery();
-        if (temp.setGroceryWithStringInput(result)) {
-          temp.quantity = 1;
-          employee.currentCart.addGrocery(temp);
-        } else {
-          print("\n\n\n\n unknown \n\n\n\n\n");
-        }
-        //employee.currentOrders.addOrders(order1);
-      });
-    } on PlatformException catch (ex) {
-      if (ex.code == BarcodeScanner.CameraAccessDenied) {
-        setState(() {
-          result = "Camera permission was denied";
-          print("$result");
-        });
-      } else {
-        setState(() {
-          result = "Unknown Error $ex";
-          print("$result");
-        });
-      }
-    } on FormatException {
-      setState(() {
-        result = "You pressed the back button before scanning anything";
-        print("$result");
-      });
-    } catch (ex) {
-      setState(() {
-        result = "Unknown Error $ex";
-        print("$result");
-      });
-    }
-  }
-
-  final GlobalKey _menuKey = new GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -494,7 +450,7 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
                                         print(
                                             "checkbox tick? ${i + 1} : ${itemsCheck[i]}");
                                       }
-                                      done = allItemsPackaged(itemsCheck);
+                                      done = allItemsPackaged(itemsCheck, collectType, lockerNum);
                                       print("CHECK DONE: ${done}");
                                       //itemsCheck[index] = value;
                                     });
@@ -511,10 +467,9 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
                     ),
                   ),
                   SizedBox(height: 30),
-
                   Visibility(
-                    child:Text("Locker No."),
-                    visible: collectType=="Self-Collect" ? true : false,
+                    child: Text("Locker No."),
+                    visible: collectType == "Self-Collect" ? true : false,
                   ),
                   Visibility(
                     child: TextFormField(
@@ -522,6 +477,20 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
                         WhitelistingTextInputFormatter.digitsOnly
                       ],
                       controller: lockerNo,
+                      onChanged: (text) {
+                        Fluttertoast.showToast(msg: "SEE TEXT: $lockerNum");
+                        if(text.isEmpty)
+                          lockerNum=false;
+                        done=allItemsPackaged(itemsCheck, collectType, lockerNum);
+                        setState(() {
+                        });
+                      },
+                      onFieldSubmitted: (term) {
+                        lockerNum = lockerCheck(term);
+                        Fluttertoast.showToast(msg: "Check lockerNum status: ${lockerNum}");
+                        done = allItemsPackaged(itemsCheck, collectType, lockerNum);
+                        setState(() {});
+                      },
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
@@ -530,9 +499,8 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
                         hintText: "Input Locker Number",
                       ),
                     ),
-                    visible: collectType=="Self-Collect" ? true : false,
+                    visible: collectType == "Self-Collect" ? true : false,
                   ),
-
                   SizedBox(height: 30),
                   ButtonTheme(
                     height: 60,
@@ -549,56 +517,12 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
                               color: Colors.white),
                         ),
                         onPressed: () async {
-//                          if(done) {
-//                             //pop back, staff->uid->history
-//                            //set locker no.
-//                            //done must include that there is a valid locker number.
-//                          } else {
-//                            Fluttertoast.showToast(msg: "Please check all the items!")
-//                          }
-                          if (collectType == "Delivery") {
-                            await Firestore.instance
-                                .collection('Delivery')
-                                .document(order.orderID)
-                                .setData({
-                              'transactionId': order.orderID,
-                              'name': order.name,
-                              'address': order.address,
-                              'totalAmount': order.totalAmount,
-                              'items': order.items,
-                              'dateOfTransaction': order.date,
-                              'customerId': order.customerId,
-                            });
-                            //update data to employee
-                            await Firestore.instance
-                                .collection('users')
-                                .document(order.customerId)
-                                .collection(collectType)
-                                .document(transactionId)
-                                .updateData({'status': "Packaged"});
-
-                          } else if (collectType == "Self-Collect") {
-                            await Firestore.instance
-                                .collection('Self-Collect')
-                                .document(order.orderID)
-                                .setData({
-                              'transactionId': order.orderID,
-                              'name': order.name,
-                              'address': order.address,
-                              'totalAmount': order.totalAmount,
-                              'items': order.items,
-                              'dateOfTransaction': order.date,
-                              'customerId': order.customerId,
-                            });
-                            await Firestore.instance
-                                .collection('users')
-                                .document(order.customerId)
-                                .collection(collectType)
-                                .document(transactionId)
-                                .updateData({'status': "Self-Collect"});
-                          }
-                          await Firestore.instance.collection('Staff').document(employee.id).collection('History').document(transactionId).setData(
-                              {
+                          if (done) {
+                            if (collectType == "Delivery") {
+                              await Firestore.instance
+                                  .collection('Delivery')
+                                  .document(order.orderID)
+                                  .setData({
                                 'transactionId': order.orderID,
                                 'name': order.name,
                                 'address': order.address,
@@ -607,14 +531,71 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
                                 'dateOfTransaction': order.date,
                                 'customerId': order.customerId,
                               });
-                          await Firestore.instance.collection('Staff').document(employee.id).collection('Packaging').document(transactionId).delete();
+                              //update data to employee
+                              await Firestore.instance
+                                  .collection('users')
+                                  .document(order.customerId)
+                                  .collection(collectType)
+                                  .document(transactionId)
+                                  .updateData({'status': "Packaged"});
+                            } else if (collectType == "Self-Collect") {
+                              //Add Self-Collect collection
+                              await Firestore.instance
+                                  .collection('Self-Collect')
+                                  .document(order.orderID)
+                                  .setData({
+                                'transactionId': order.orderID,
+                                'name': order.name,
+                                'address': order.address,
+                                'totalAmount': order.totalAmount,
+                                'items': order.items,
+                                'dateOfTransaction': order.date,
+                                'customerId': order.customerId,
+                              });
 
-                          Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(builder: (context) =>
-                                  PackagerHomePage(
-                                    employee: employee,
-                                    auth: auth,
-                                    edb: edb,)));
+                              //Update status and lockerNum in users' orders
+                              await Firestore.instance
+                                  .collection('users')
+                                  .document(order.customerId)
+                                  .collection(collectType)
+                                  .document(transactionId)
+                                  .updateData({
+                                'status': "Self-Collect",
+                                'lockerNum': lockerNo.text,
+                              });
+                            }
+                            await Firestore.instance
+                                .collection('Staff')
+                                .document(employee.id)
+                                .collection('History')
+                                .document(transactionId)
+                                .setData({
+                              'transactionId': order.orderID,
+                              'name': order.name,
+                              'address': order.address,
+                              'totalAmount': order.totalAmount,
+                              'items': order.items,
+                              'dateOfTransaction': order.date,
+                              'customerId': order.customerId,
+                            });
+                            await Firestore.instance
+                                .collection('Staff')
+                                .document(employee.id)
+                                .collection('Packaging')
+                                .document(transactionId)
+                                .delete();
+
+                            Navigator.of(context)
+                                .pushReplacement(MaterialPageRoute(
+                                    builder: (context) => PackagerHomePage(
+                                          employee: employee,
+                                          auth: auth,
+                                          edb: edb,
+                                        )));
+                          } else {
+                            Fluttertoast.showToast(
+                                msg: "Unable to complete packaging!");
+                          }
                         }),
                   ),
                   SizedBox(height: 30),
@@ -624,108 +605,4 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
           }),
     );
   }
-
-  Grocery item1 = new Grocery(
-      id: "1",
-      name: "Red Ball-Point Pencil",
-      description: "this is a pencil",
-      supplier: "Kenyon's Pencils Pte",
-      cost: 1.50,
-      imageURL:
-          "https://firebasestorage.googleapis.com/v0/b/neutral-creep-dev.appspot.com/o/apple.jpg?alt=media&token=43d25e60-a478-4e8d-9bcd-793aa918d84c");
-
-  Grocery item2 = new Grocery(
-      id: "2",
-      name: "elifford The Big Red Cock",
-      description: "this is a big red cock",
-      supplier: "ZP YAOZ CLUB HOUSE",
-      cost: 37.45);
-  Grocery item3 = new Grocery(
-      id: "3",
-      name: "Fuji Apple (Small)",
-      description: "this is an apple",
-      supplier: "Matts Farm (Japan)",
-      cost: 8.20);
-  Grocery item4 = new Grocery(
-      id: "4",
-      name: "Square Watermalon",
-      description: "this is a watermelon",
-      supplier: "RayRay's Weird & Wonderful Garden",
-      cost: 7.80);
-  Grocery item5 = new Grocery(
-      id: "5",
-      name: "1-Ply Tissue Packet",
-      description: "this is a tissue packet",
-      supplier: "Mama Cheap Cheap ABC",
-      cost: 0.50);
-
-  Grocery item6 = new Grocery(
-      id: "6",
-      name: "Red Ball-Point Pencil",
-      description: "this is a pencil",
-      supplier: "Kenyon's Pencils Pte",
-      cost: 1.50,
-      imageURL:
-          "https://firebasestorage.googleapis.com/v0/b/neutral-creep-dev.appspot.com/o/apple.jpg?alt=media&token=43d25e60-a478-4e8d-9bcd-793aa918d84c");
-
-  Grocery item7 = new Grocery(
-      id: "7",
-      name: "elifford The Big Red Cock",
-      description: "this is a big red cock",
-      supplier: "ZP YAOZ CLUB HOUSE",
-      cost: 37.45);
-  Grocery item8 = new Grocery(
-      id: "8",
-      name: "Fuji Apple (Small)",
-      description: "this is an apple",
-      supplier: "Matts Farm (Japan)",
-      cost: 8.20);
-  Grocery item9 = new Grocery(
-      id: "9",
-      name: "Square Watermalon",
-      description: "this is a watermelon",
-      supplier: "RayRay's Weird & Wonderful Garden",
-      cost: 7.80);
-  Grocery item10 = new Grocery(
-      id: "10",
-      name: "1-Ply Tissue Packet",
-      description: "this is a tissue packet",
-      supplier: "Mama Cheap Cheap ABC",
-      cost: 0.50);
-
-//  var cartDb = [
-//    item1,
-//    item2,
-//    item3,
-//    item4,
-//    item5,
-//    item6,
-//    item7,
-//    item8,
-//    item9,
-//    item10
-//  ];
-
-//                        onPressed: () {
-//    PurchaseTransaction transaction =
-//    new PurchaseTransaction(
-//    cart: employee.currentCart);
-//
-//    edb
-//        .getTransactionId(employee.id)
-//        .then((transactionId) {
-//    transaction.setId(
-//    transactionId.toString().padLeft(8, "0"));
-////                            Navigator.of(context)
-//////                                .push(MaterialPageRoute(
-//////                                builder: (context) => SummaryPage(
-//////                                  transaction: transaction,
-//////                                  employee: employee,
-//////                                  db: db,
-//////                                )))
-//////                                .then((value) {
-//////                              print("$value");
-//////                            });
-//    });
-//                        },
 }

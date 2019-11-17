@@ -57,9 +57,9 @@ class _DeliveryHistoryPageState extends State<DeliveryHistoryPage> {
     var firestore = Firestore.instance;
     //Change to Pending delivery when confirmed for collection
     QuerySnapshot qn = await firestore
-        .collection('Staff History')
-        .document('${employee.id}')
-        .collection('Delivery')
+        .collection('Staff')
+        .document(employee.id)
+        .collection('History')
         .getDocuments();
     print("check staff history employee id: ${employee.id}");
     return qn;

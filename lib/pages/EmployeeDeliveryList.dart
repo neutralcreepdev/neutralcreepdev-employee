@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:neutral_creep_dev/models/delivery.dart';
 import 'package:neutral_creep_dev/pages/summaryPage.dart';
@@ -44,7 +45,6 @@ class _DeliveryListPageState extends State<DeliveryListPage> {
   String result = "";
   Color bgColor = Colors.white;
   bool selected = false;
-  Delivery _deliveryList = new Delivery();
   _DeliveryListPageState({this.employee, this.auth, this.edb});
   int _selectedIndex = 0; //change to -1
   bool _selected=false;
@@ -65,6 +65,7 @@ class _DeliveryListPageState extends State<DeliveryListPage> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: alablaster,
@@ -84,6 +85,7 @@ class _DeliveryListPageState extends State<DeliveryListPage> {
           //child: StreamBuilder(
             future: getData(),
             builder: (context, snapshot) {
+              Delivery _deliveryList = new Delivery();
               if (!snapshot.hasData) return Text('Loading...');
               for(int i=0; i<snapshot.data.documents.length; i++) {
                 String orderIDTemp = snapshot.data
@@ -113,10 +115,8 @@ class _DeliveryListPageState extends State<DeliveryListPage> {
                     totalAmount: totalAmountTemp
                 )
                 );
-                print("check delivery list customerID = ${_deliveryList
-                    .getOrders(i)
-                    .date}");
               }
+              Fluttertoast.showToast(msg: "delivery list size: ${_deliveryList.getOrdersSize()}");
               final int deliverySize = snapshot.data.documents.length;
               return Container(
                   height: MediaQuery
@@ -164,20 +164,25 @@ class _DeliveryListPageState extends State<DeliveryListPage> {
                                 color: _selected != false
                                     ? heidelbergRed
                                     : Colors.white12,
-                                onPressed:(){
+                                onPressed:() async {
                                   if(_selected==true) {
-                                    Navigator.of(context)
-                                        .push(MaterialPageRoute(
+                                    dynamic flag = await Navigator
+                                        .push(context, MaterialPageRoute(
                                         builder: (context) =>
                                             EmployeeDeliveryPage(
                                               order: _deliveryList.getOrders(
                                                   _selectedIndex),
                                               edb: edb,
                                               employee: employee,
-                                            )))
-                                        .then((value) {
-                                      print("$value");
-                                    });
+                                            )));
+
+
+                                    if(flag['flag']==true) {
+                                      //Fluttertoast.showToast(msg: "FLAG STATUS: ${flag['flag']}");
+                                      setState((){
+                                        //getData();
+                                      });
+                                    }
                                   }
                                 },
                                 shape: RoundedRectangleBorder(
