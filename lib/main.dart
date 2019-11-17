@@ -14,7 +14,6 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.yellow,
       ),
       home: MyHomePage(title: 'HOME'),
-
     );
   }
 }
@@ -28,9 +27,10 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-
-
 class _MyHomePageState extends State<MyHomePage> {
+
+  //Sample Data
+  String dropdownValue = 'LOCATION';
   int _counter = 0;
   final europeanCountries = ['Albania', 'Belarus', 'Czech Republic', 'Denmark'];
   final _biggerFont = const TextStyle(fontSize: 18.0);
@@ -38,6 +38,9 @@ class _MyHomePageState extends State<MyHomePage> {
   final location = ['CCK', 'BukitBatok', 'Woodlands', 'JurongEast'];
   final unit = ['#01-23', '#02-34', '#03-45', '#04-56'];
   final postalCode = ['112233', '223344', '334455', '445566'];
+
+  //sample function. to be replaced with directing this home page to next
+  //screen for 'START' DELIVERY
   void _incrementCounter() {
     setState(() {
       _counter++;
@@ -56,101 +59,106 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-
-      drawer: Drawer (
+      drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
-            children: <Widget>[
-//              DrawerHeader(
-//                decoration: BoxDecoration(
-//                  color: Colors.white70,
-//                ),
-//                margin: EdgeInsets.all(0.0),
-//                padding: EdgeInsets.all(0.0)
-//              ),
-            SizedBox (
-            height: 20.0,
+          children: <Widget>[
+            SizedBox(
+              height: 20.0,
+            ),
+            ListTile(
+              title: Text('PROFILE'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: Text('HISTORY'),
+              onTap: () {
+                // close the drawer
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: Text('LOGOUT'),
+              onTap: () {
+                // close the drawer
+                Navigator.pop(context);
+              },
+            ),
+          ],
         ),
-              ListTile(
-                title: Text('PROFILE'),
-                onTap: () {
-                  Navigator.pop(context);
-                },
+      ),
+      body: Container(
+        child: Stack(
+          children: <Widget>[
+            //  title text ====================================
+            Positioned.fill(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  new Container(
+                    child: new Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Text('FILTER: '),
+                        DropdownButton(
+                          value: dropdownValue,
+                          icon: Icon(Icons.arrow_downward),
+                          iconSize: 24,
+                          elevation: 16,
+                          style: TextStyle(color: Colors.deepPurple),
+                          underline: Container(
+                            height: 2,
+                            color: Colors.deepPurpleAccent,
+                          ),
+                          onChanged: (String newValue) {
+                            setState(() {
+                              dropdownValue = newValue;
+                            });
+                          },
+                          items: <String>[
+                            'LOCATION',
+                            'UNIT',
+                            'POSTAL CODE',
+                            'ORDER'
+                          ].map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  new Expanded(
+                      child: ListView.builder(
+                          itemCount: europeanCountries.length,
+                          itemBuilder: (context, int index) {
+                            return ListTile(
+                                title: new Column(
+                              children: <Widget>[
+                                Text("ORDER#123456"),
+                                Text('NAME: ' + europeanCountries[index]),
+                                Text('LOCATION: ' + location[index]),
+                                Text('UNIT: ' + unit[index]),
+                                Text('POSTAL CODE: ' + postalCode[index]),
+                                new RaisedButton(
+                                  onPressed: _incrementCounter,
+                                  textColor: Colors.white,
+                                  color: Colors.red,
+                                  child: new Text("START DELIVERY"),
+                                ),
+                              ],
+                            ));
+                          }))
+                ],
               ),
-              ListTile(
-                title: Text('HISTORY'),
-                onTap: () {
-                  // close the drawer
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                title: Text('LOGOUT'),
-                onTap: () {
-                  // close the drawer
-                  Navigator.pop(context);
-                },
-              ),
-
-              ],
+            ),
+          ],
         ),
-        ),
-
-        body: new ListView.builder(
-          itemCount: europeanCountries.length,
-            itemBuilder: (BuildContext ctxt, int index) {
-            return ListTile(
-                title: new Column(
-                  children: <Widget>[
-                    new Text('NAME: ' + europeanCountries[index]),
-                    new Text('LOCATION: ' + location[index]),
-                    new Text('UNIT: ' + unit[index]),
-                    new Text ('POSTAL CODE: ' + postalCode[index]),
-                  ],
-                )
-            );
-            },
-        ),
-
-//          // backing data
-//        final europeanCountries = ['Albania', 'Andorra', 'Armenia', 'Austria',
-//        'Azerbaijan', 'Belarus', 'Belgium', 'Bosnia and Herzegovina', 'Bulgaria',
-//        'Croatia', 'Cyprus', 'Czech Republic', 'Denmark', 'Estonia', 'Finland',
-//        'France', 'Georgia', 'Germany', 'Greece', 'Hungary', 'Iceland', 'Ireland',
-//        'Italy', 'Kazakhstan', 'Kosovo', 'Latvia', 'Liechtenstein', 'Lithuania',
-//        'Luxembourg', 'Macedonia', 'Malta', 'Moldova', 'Monaco', 'Montenegro',
-//        'Netherlands', 'Norway', 'Poland', 'Portugal', 'Romania', 'Russia',
-//        'San Marino', 'Serbia', 'Slovakia', 'Slovenia', 'Spain', 'Sweden',
-//        'Switzerland', 'Turkey', 'Ukraine', 'United Kingdom', 'Vatican City'];
-//
-//        return ListView.builder(
-//        itemCount: europeanCountries.length,
-//        itemBuilder: (context, index) {
-//            return ListTile(
-//            title: Text(europeanCountries[index]),
-//            );
-//            },
-//            );
-
-//      body: Center(
-//        child: Column(
-//          mainAxisAlignment: MainAxisAlignment.center,
-//          children: <Widget>[
-//            Text(
-//              'You have pushed the button this many times:',
-//            ),
-//            Text(
-//              '$_counter',
-//              style: Theme.of(context).textTheme.display1,
-//            ),
-//          ],
-//        ),
-//      ),
-//      floatingActionButton: FloatingActionButton(
-//        onPressed: _incrementCounter,
-//        tooltip: 'Increment',
-//        child: Icon(Icons.add),
-//      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 }
