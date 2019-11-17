@@ -41,6 +41,7 @@ dependencies:
   firebase_storage: ^3.0.6
 
   barcode_scan: ^1.0.0
+  flutter_spinkit: ^4.0.0
 
 dev_dependencies:
   flutter_test:

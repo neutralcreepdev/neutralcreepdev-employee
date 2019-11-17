@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:neutral_creep_dev/pages/paymentPage.dart';
-import 'package:neutral_creep_dev/services/dbService.dart';
 import 'package:neutral_creep_dev/services/edbService.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -10,8 +8,6 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 
-import '../models/transaction.dart';
-import '../models/customer.dart';
 import '../models/delivery.dart';
 import '../models/employee.dart';
 
@@ -38,14 +34,13 @@ class _EmployeeDeliveryPageState extends State<EmployeeDeliveryPage> {
 
   _EmployeeDeliveryPageState({this.order, this.edb, this.employee});
 
+  Map arrivedTime;
+  Map expectedTime;
+
   String hashData(order) {
-    //Date minus 4
     String newDate =
         order.date.toString().substring(0, order.date.toString().length);
     String data = order.orderID + newDate;
-    print("order orderID: ${order.orderID}");
-    print("order orderID: ${newDate}");
-    print("order orderID: ${data}");
     var dataBytes = utf8.encode(data);
     var digest = sha256.convert(dataBytes);
     return digest.toString();
@@ -62,6 +57,19 @@ class _EmployeeDeliveryPageState extends State<EmployeeDeliveryPage> {
         .getDocuments();
     return qn;
   }
+
+  bool deliveryLate(Map arrivedDate, Map expectedDate, String arrived, String expected) {
+    bool temp=true;
+      DateTime arr = new DateTime(int.parse(arrivedDate['year']), int.parse(arrivedDate['month']), int.parse(arrivedDate['day']), int.parse(arrived.substring(0,2)), int.parse(arrived.substring(3, 5)));
+      DateTime exp = new DateTime(int.parse(expectedDate['year']), int.parse(expectedDate['month']), int.parse(expectedDate['day']), int.parse(expected.substring(0,2)), int.parse(expected.substring(3, 5)));
+
+      if(arr.isBefore(exp))
+        temp=false;
+
+
+    return temp;
+  }
+
 
   void initState() {
     time = Timer.periodic(Duration(milliseconds: 10), (Timer t) {
@@ -98,8 +106,9 @@ class _EmployeeDeliveryPageState extends State<EmployeeDeliveryPage> {
               for (int i = 0; i < snapshot.data.documents.length; i++) {
                 if (snapshot.data.documents[i]['transactionId'] ==
                     order.orderID) {
-                  if (snapshot.data.documents[i]['status'] == "Delivered")
+                  if (snapshot.data.documents[i]['status'] == "Delivered") {
                     delivered = true;
+                  }
                 }
               }
 
@@ -117,7 +126,6 @@ class _EmployeeDeliveryPageState extends State<EmployeeDeliveryPage> {
                     ),
                     QrImage(
                         data: hashData(order),
-                        //data: "123456789",
                         version: QrVersions.auto,
                         size: 200.0),
                     SizedBox(height: 30),
@@ -140,11 +148,28 @@ class _EmployeeDeliveryPageState extends State<EmployeeDeliveryPage> {
                           //1. Archive the delivery order from customer's to history
                           //2. Archive the delivery order from employee's to history
                           //3. Pop out to list
+                          DateTime now = new DateTime.now();
+                          Map date;
+                          arrivedTime ={
+                            "date": date ={
+                              "day": now.day.toString(),
+                              "month": now.month.toString(),
+                              "year": now.year.toString(),
+                            },
+                            "time": now.toString().substring(11,16),
+                          };
+
+//                          if(deliveryLate(arrivedTime['date'], order.timeArrival['date'], now.toString().substring(11,16), order.timeArrival['time'])){
+//                            //Fluttertoast.showToast(msg: "${arrivedTime['date']}");
+//                            Fluttertoast.showToast(msg: "${order.timeArrival['time']}");
+//                          } else {
+//                            Fluttertoast.showToast(msg: "FALSE");
+//                          }
                           if (delivered) {
                             await Firestore.instance
                                 .collection('Staff')
                                 .document(employee.id)
-                                .collection('History')
+                                .collection('Staff History')
                                 .document(order.orderID)
                                 .setData({
                               'transactionId': order.orderID,
@@ -154,14 +179,39 @@ class _EmployeeDeliveryPageState extends State<EmployeeDeliveryPage> {
                               'items': order.items,
                               'dateOfTransaction': order.date,
                               'customerId': order.customerId,
-                              'status': 'Delivered'
+                              'employeeId': employee.id,
+                              'expectedTime': order.timeArrival,
+                              'status': deliveryLate(arrivedTime['date'], order.timeArrival['date'], now.toString().substring(11,16), order.timeArrival['time'])?"Delivered (Late)":"Delivered",
+                              'actualTime': arrivedTime,
                             });
-                            print("check hashdata: ${hashData(order)}");
+                            await Firestore.instance
+                                .collection('Past Deliveries')
+                                .document(order.orderID)
+                                .setData({
+                              'transactionId': order.orderID,
+                              'name': order.name,
+                              'address': order.address,
+                              'totalAmount': order.totalAmount,
+                              'items': order.items,
+                              'dateOfTransaction': order.date,
+                              'customerId': order.customerId,
+                              'employeeId': employee.id,
+                              'expectedTime': order.timeArrival,
+                              'status': deliveryLate(arrivedTime['date'], order.timeArrival['date'], now.toString().substring(11,16), order.timeArrival['time'])?"Delivered (Late)":"Delivered",
+                              'actualTime': arrivedTime,
+                            });
+                            await new Future.delayed(const Duration(seconds: 2));
+                            await Firestore.instance.collection('users').document(order.customerId).collection("History").document(order.orderID).updateData({
+                              'status': deliveryLate(arrivedTime['date'], order.timeArrival['date'], now.toString().substring(11,16), order.timeArrival['time'])?"Delivered (Late)":"Delivered",
+                              'actualTime': arrivedTime,
+                            }
+
+                            );
                             Navigator.pop(context, {'flag': true});
                             Firestore.instance
                                 .collection('Staff')
                             .document(employee.id)
-                            .collection('Delivery')
+                            .collection('Pending Deliveries')
                                 .document(order.orderID)
                                 .delete();
 

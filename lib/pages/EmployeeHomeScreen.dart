@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:neutral_creep_dev/models/delivery.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-//import 'dart:async';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
@@ -41,7 +40,6 @@ class _HomePageState extends State<MyHomePage> {
   Color bgColor = Colors.white;
   bool selected = false;
 
-  //
   _HomePageState({this.employee, this.auth, this.edb});
 
   final databaseReference = Firestore.instance;
@@ -91,11 +89,10 @@ class _HomePageState extends State<MyHomePage> {
     Widget continueButton = FlatButton(
       child: Text("Confirm"),
       onPressed: () async {
-        Fluttertoast.showToast(msg: "check woohoo: ${order.customerId}");
         await Firestore.instance
             .collection('Staff')
-        .document(employee.id)
-        .collection('Delivery')
+            .document(employee.id)
+            .collection('Pending Deliveries')
             .document(order.orderID)
             .setData({
           'transactionId': order.orderID,
@@ -105,6 +102,8 @@ class _HomePageState extends State<MyHomePage> {
           'items': order.items,
           'dateOfTransaction': order.date,
           'customerId': order.customerId,
+          'timeArrival': order.timeArrival,
+          'employeeId': employee.id,
         });
 
         await Firestore.instance
@@ -114,19 +113,17 @@ class _HomePageState extends State<MyHomePage> {
             .document(order.orderID)
             .updateData({'status': "Delivering"});
 
+        //To add to addDeliveryDialog
+        Firestore.instance
+            .collection('Delivery')
+            .document(order.orderID)
+            .delete();
+
         Navigator.pop(context);
 
         Fluttertoast.showToast(
-            msg: "Successfully added to Delivery List!",
-//          toastLength: Toast.LENGTH_LONG,
-//          gravity: ToastGravity.BOTTOM,
-//          backgroundColor: Colors.white,
-//            textColor:Colors.black,
-            fontSize: 16.0);
+            msg: "Successfully added to Delivery List!", fontSize: 16.0);
         setState(() {});
-        //add order to employee delivery list
-        //delete order from pending delivery
-        //print('confirm button pressed');
       },
     );
 
@@ -211,8 +208,7 @@ class _HomePageState extends State<MyHomePage> {
                   ],
                 ),
               ));
-              setState(() {
-              });
+              setState(() {});
             },
           ),
           SizedBox(width: 20),
@@ -231,9 +227,11 @@ class _HomePageState extends State<MyHomePage> {
                 style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
               ),
               onTap: () {
+                print( "MSG: employee: ${employee.id}");
                 Navigator.of(context).pop();
+
                 Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => ProfilePage()));
+                    MaterialPageRoute(builder: (context) => ProfilePage(employee: employee, edb: edb)));
               },
             ),
             SizedBox(height: 30),
@@ -261,7 +259,6 @@ class _HomePageState extends State<MyHomePage> {
                 style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
               ),
               onTap: () {
-                print("before going to deliveryhistory page = ${employee.id}");
                 Navigator.of(context).pop();
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => DeliveryHistoryPage(
@@ -294,118 +291,130 @@ class _HomePageState extends State<MyHomePage> {
           future: getData(),
           builder: (context, snapshot) {
             Delivery _deliveryList = new Delivery();
-            print("employee.id = ${employee.id}");
-            if (!snapshot.hasData) return Text('Loading...');
-            for (int i = 0; i < snapshot.data.documents.length; i++) {
-              String orderIDTemp = snapshot.data.documents[i]['transactionId'];
-              Map addressTemp = Map.from(snapshot.data.documents[i]['address']);
-              String nameTemp = snapshot.data.documents[i]['name'];
-              DateTime dateTemp =
-                  snapshot.data.documents[i]['dateOfTransaction'].toDate();
-              List<dynamic> items = new List<dynamic>();
-              items = snapshot.data.documents[i]['items'];
-              double totalAmountTemp = double.parse(
-                  snapshot.data.documents[i]['totalAmount'].toString());
-              String customerIDTemp = snapshot.data.documents[i]['customerId'];
-              _deliveryList.addOrders(new Order(
-                  orderID: orderIDTemp,
-                  name: nameTemp,
-                  address: addressTemp,
-                  date: dateTemp,
-                  customerId: customerIDTemp,
-                  items: items,
-                  totalAmount: totalAmountTemp));
-              print(
-                  "check delivery list customerID = ${_deliveryList.getOrders(i).date}");
-            }
-            print("check size = ${_deliveryList.getOrdersSize()}");
-            final int deliverySize = snapshot.data.documents.length;
-            return Container(
-                height: MediaQuery.of(context).size.height,
-                width: MediaQuery.of(context).size.width,
-                color: whiteSmoke,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Expanded(
-                      child: SmartRefresher(
-                        enablePullDown: true,
-                        child: ListView.builder(
-                          itemCount: deliverySize,
-                          itemBuilder: (context, index) => Card(
-                              child: Container(
-                                  color: _selectedIndex != null &&
-                                          _selectedIndex == index
-                                      ? Colors.red
-                                      : Colors.white,
-                                  child: ListTile(
-                                      title: Text(_deliveryList
-                                          .getOrders(index)
-                                          .toString()),
-                                      onTap: () => _setCardColor(index),
-                                      onLongPress: () {
-                                        Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    ItemsSummaryPage(
-                                                        order: _deliveryList
-                                                            .getOrders(
-                                                                index))));
-                                      }))),
-                        ),
-                        controller: _refreshController,
-                        onRefresh: _onRefresh,
-                        onLoading: _onLoading,
-                      ),
-                    ),
-                    Container(
-                      padding: EdgeInsets.all(10),
-                      child: Column(
-                        children: <Widget>[
-                          SizedBox(height: 10),
-                          ButtonTheme(
-                            height: 60,
-                            minWidth: 250,
-                            child: Column(
-                              children: <Widget>[
-                                RaisedButton(
-                                  color: _selected != false
-                                      ? heidelbergRed
-                                      : Colors.white12,
-                                  onPressed: () {
-                                    if (_selected == true) {
-                                      addDeliveryDialog(
-                                          context,
-                                          _deliveryList
-                                              .getOrders(_selectedIndex));
+            if (!snapshot.hasData)
+              return Text('Loading...');
+            else {
+              if (snapshot.data.documents.length == 0) {
+                return Center(
+                  child: Text("Currently no delivery orders"),
+                );
+              } else {
+                for (int i = 0; i < snapshot.data.documents.length; i++) {
+                  String orderIDTemp =
+                      snapshot.data.documents[i]['transactionId'];
+                  Map addressTemp =
+                      Map.from(snapshot.data.documents[i]['address']);
+                  String nameTemp = snapshot.data.documents[i]['name'];
+                  DateTime dateTemp =
+                      snapshot.data.documents[i]['dateOfTransaction'].toDate();
+                  List<dynamic> items = new List<dynamic>();
+                  items = snapshot.data.documents[i]['items'];
+                  double totalAmountTemp = double.parse(
+                      snapshot.data.documents[i]['totalAmount'].toString());
+                  String customerIDTemp =
+                      snapshot.data.documents[i]['customerId'];
+                  String collectTypeTemp =
+                      snapshot.data.documents[i]['collectType'];
+                  Map timeArrivalTemp =
+                      snapshot.data.documents[i]['timeArrival'];
+                  _deliveryList.addOrders(new Order(
+                      orderID: orderIDTemp,
+                      name: nameTemp,
+                      address: addressTemp,
+                      date: dateTemp,
+                      customerId: customerIDTemp,
+                      items: items,
+                      collectType: collectTypeTemp,
+                      timeArrival: timeArrivalTemp,
+                      totalAmount: totalAmountTemp));
+                }
+              }
 
-                                      Firestore.instance
-                                          .collection('Delivery')
-                                          .document(_deliveryList
-                                              .getOrders(_selectedIndex)
-                                              .orderID)
-                                          .delete();
-                                    }
-                                  },
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(35)),
-                                  child: Text(
-                                    "ADD ORDER",
-                                    style: TextStyle(
-                                        fontSize: 30,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white),
-                                  ),
-                                ),
-                              ],
-                            ),
+              final int deliverySize = snapshot.data.documents.length;
+              return Container(
+                  height: MediaQuery.of(context).size.height,
+                  width: MediaQuery.of(context).size.width,
+                  color: whiteSmoke,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Expanded(
+                        child: SmartRefresher(
+                          enablePullDown: true,
+                          child: ListView.builder(
+                            itemCount: deliverySize,
+                            itemBuilder: (context, index) => Card(
+                                child: Container(
+                                    color: _selectedIndex != null &&
+                                            _selectedIndex == index
+                                        ? Colors.red
+                                        : Colors.white,
+                                    child: ListTile(
+                                        title: Text(_deliveryList
+                                            .getOrders(index)
+                                            .toString()),
+                                        onTap: () => _setCardColor(index),
+                                        onLongPress: () {
+                                          Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      ItemsSummaryPage(
+                                                          order: _deliveryList
+                                                              .getOrders(
+                                                                  index))));
+                                        }))),
                           ),
-                        ],
+                          controller: _refreshController,
+                          onRefresh: _onRefresh,
+                          onLoading: _onLoading,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 30)
-                  ],
-                ));
+                      Container(
+                        padding: EdgeInsets.all(10),
+                        child: Column(
+                          children: <Widget>[
+                            SizedBox(height: 10),
+                            ButtonTheme(
+                              height: 60,
+                              minWidth: 250,
+                              child: Column(
+                                children: <Widget>[
+                                  RaisedButton(
+                                    color: _selected != false
+                                        ? heidelbergRed
+                                        : Colors.white12,
+                                    onPressed: () {
+                                      if (_selected == true) {
+                                        addDeliveryDialog(
+                                            context,
+                                            _deliveryList
+                                                .getOrders(_selectedIndex));
+                                      } else {
+                                        Fluttertoast.showToast(
+                                            msg: "Please select an order");
+                                      }
+                                    },
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(35)),
+                                    child: Text(
+                                      "ADD ORDER",
+                                      style: TextStyle(
+                                          fontSize: 30,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 30)
+                    ],
+                  ));
+            }
           }),
     );
   }

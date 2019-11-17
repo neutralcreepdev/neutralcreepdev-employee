@@ -24,7 +24,7 @@ class DBService {
   }
 
   Future<Customer> getCustomerData(String uid) async {
-    var snap = await _db.collection("Staff").document(uid).get();
+    var snap = await _db.collection("users").document(uid).get();
     Customer customer = Customer.fromMap(snap.data);
 
     return customer;

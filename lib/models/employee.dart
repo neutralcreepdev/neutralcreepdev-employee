@@ -9,6 +9,9 @@ class Employee extends User {
   List<Transaction> transactions;
   Cart currentCart;
   Delivery currentOrders;
+  String gender;
+  String role;
+  String email;
 
   Employee(
       {String id,
@@ -17,6 +20,9 @@ class Employee extends User {
       Map dob,
       String contactNum,
       Map address,
+        this.gender,
+        this.role,
+        this.email,
         this.currentOrders,
       this.transactions,
       this.currentCart})
@@ -24,7 +30,7 @@ class Employee extends User {
 
   factory Employee.fromMap(Map data) {
     return Employee(
-        id: data["id"] ?? "",
+        id: data["UID"] ?? "",
         firstName: data["firstName"] ?? "",
         lastName: data["lastName"] ?? "",
         dob: {
@@ -32,12 +38,15 @@ class Employee extends User {
           "month": data["dob"]["month"] ?? 0,
           "year": data["dob"]["year"] ?? 0
         },
-        contactNum: data["contactNum"] ?? "",
+        contactNum: data["contactNumber"] ?? "",
         address: {
           "street": data["address"]["street"] ?? "",
           "unit": data["address"]["unit"] ?? "",
           "postalCode": data["address"]["postalCode"] ?? ""
         },
+        gender: data["gender"] ?? "",
+        role: data["role"] ?? "",
+        email: data["email"] ?? "",
         currentOrders: new Delivery());
   }
 

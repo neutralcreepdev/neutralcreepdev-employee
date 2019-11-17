@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:neutral_creep_dev/models/customer.dart';
 import 'package:neutral_creep_dev/models/employee.dart';
@@ -26,9 +28,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
 
   //final _db = DBService();
   final _edb = EDBService();
-  var isSignUp = true;
   var isRememberMe = false;
-  String role = "Packager";
   String _email, _password;
 
   Container buildLoginSignUpButtonContainer() {
@@ -37,48 +37,19 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
       //color: Colors.yellow,
       child: Padding(
         padding: const EdgeInsets.all(10.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            FlatButton(
-              child: Text(
-                "LOGIN",
-                style: TextStyle(
-                    color: isSignUp
-                        ? heidelbergRed.withOpacity(0.5)
-                        : heidelbergRed,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold),
-              ),
-              onPressed: () {
-                setState(() {
-                  isSignUp = false;
-                });
-              },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                    "LOGIN",
+                    style: TextStyle(
+                        color: heidelbergRed,
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold),
+                  ),
+              ],
             ),
-            SizedBox(
-              width: 10,
-            ),
-            FlatButton(
-              child: Text(
-                "SIGN UP",
-                style: TextStyle(
-                    color: isSignUp
-                        ? heidelbergRed
-                        : heidelbergRed.withOpacity(0.5),
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold),
-              ),
-              onPressed: () {
-                setState(() {
-                  isSignUp = true;
-                });
-              },
-            ),
-          ],
-        ),
-      ),
-    );
+    ));
   }
 
   Container buildTermsAndConditionContainer() {
@@ -258,6 +229,9 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
                                   if (emailInput.isEmpty) {
                                     return "This field is blank";
                                   }
+                                  bool checkEmail = RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(emailInput);
+                                  if(checkEmail==false)
+                                    return "Please enter a valid email";
                                 },
                               ),
 
@@ -281,25 +255,6 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
 
                               //  confirm password text form ====================================
                               SizedBox(height: 10),
-                              isSignUp
-                                  ? TextFormField(
-                                      obscureText: true,
-                                      textAlign: TextAlign.center,
-                                      decoration: InputDecoration(
-                                        hintText: "CONFIRMED PASSWORD",
-                                      ),
-                                      validator: (confirmPasswordInput) {
-                                        if (confirmPasswordInput.isEmpty) {
-                                          return "This field is blank";
-                                        }
-
-                                        if (confirmPasswordInput !=
-                                            _passKey.currentState.value) {
-                                          return "Confirm Password should match password";
-                                        }
-                                      },
-                                    )
-                                  : Container(),
                             ],
                           )),
 
@@ -308,9 +263,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
                         padding: EdgeInsets.only(bottom: 20),
                         child: Column(
                           children: <Widget>[
-                            isSignUp
-                                ? buildTermsAndConditionContainer()
-                                : buildRememberMeAndForgetPassContainer(),
+                            buildRememberMeAndForgetPassContainer(),
 
                             //  login sign up button ====================================
                             SizedBox(height: 15),
@@ -322,89 +275,90 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(35)),
                                 child: Text(
-                                  isSignUp ? "SIGN UP" : "LOGIN",
+                                  "LOGIN",
                                   style: TextStyle(
                                       fontSize: 40,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white),
                                 ),
-                                onPressed: () {
+                                onPressed: () async{
+                                  bool x =true;
                                   if (_formKey.currentState.validate()) {
                                     _formKey.currentState.save();
-                                    if (isSignUp) {
-                                      Future<FirebaseUser> user =
-                                          _auth.handleSignUp(_email, _password);
-                                      user.then((userValue) {
-                                        Firestore.instance
-                                            .collection("users")
-                                            .document("${userValue.uid}")
-                                            .setData({
-                                          "id": userValue.uid,
-                                          "lastLoggedIn": DateTime.now()
+                                    await showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        Future<FirebaseUser> user = _auth
+                                            .handleEmailSignIn(_email, _password, context);
+                                        user.then((userValue) {
+                                          _edb
+                                              .getEmployeeData(userValue.uid)
+                                              .then((employee) {
+                                            if (employee.role == "Delivery") {
+                                              Navigator.of(context)
+                                                  .pushReplacement(
+                                                  MaterialPageRoute(
+                                                      settings:
+                                                      RouteSettings(
+                                                          name: "home"),
+                                                      builder: (context) =>
+                                                          MyHomePage(
+                                                              employee:
+                                                              employee,
+                                                              auth: _auth,
+                                                              edb: _edb)));
+                                            } else if (employee.role == "Packer") {
+                                              Navigator.of(context)
+                                                  .pushReplacement(
+                                                  MaterialPageRoute(
+                                                      settings:
+                                                      RouteSettings(
+                                                          name: "home"),
+                                                      builder: (context) =>
+                                                          PackagerHomePage(
+                                                              employee:
+                                                              employee,
+                                                              auth: _auth,
+                                                              edb: _edb)));
+                                            } else{
+                                              Fluttertoast.showToast(msg: "Unable to login, please contact your manager.");
+                                            }
+                                          });
+                                        }).catchError((error, stackTrace) {
+                                          Navigator.pop(context);
+                                          x = false;
                                         });
-                                        Employee employee = new Employee();
-                                        Customer customer = new Customer();
-
-                                        if (role == "Delivery") {
-                                          Navigator.of(context).pushReplacement(
-                                              MaterialPageRoute(
-                                                  settings: RouteSettings(
-                                                      name: "home"),
-                                                  builder: (context) =>
-                                                      MyHomePage(
-                                                        employee: employee,
-                                                        auth: _auth,
-                                                        edb: _edb,
-                                                      )));
-                                        } else if (role == "Packager") {
-                                          Navigator.of(context).pushReplacement(
-                                              MaterialPageRoute(
-                                                  settings: RouteSettings(
-                                                      name: "home"),
-                                                  builder: (context) =>
-                                                      MyHomePage(
-                                                        employee: employee,
-                                                        auth: _auth,
-                                                        edb: _edb,
-                                                      )));
-                                        }
+                                        return Dialog(
+                                            backgroundColor:
+                                            Colors.transparent,
+                                            child: x
+                                                ? SpinKitRotatingCircle(
+                                              color: Colors.white,
+                                              size: 50.0,
+                                            )
+                                                : Text("lame"));
                                       });
-                                    } else {
-                                      Future<FirebaseUser> user = _auth
-                                          .handleEmailSignIn(_email, _password);
-                                      user.then((userValue) {
-                                        _edb
-                                            .getEmployeeData(userValue.uid)
-                                            .then((employee) {
-                                          if (role == "Delivery") {
-                                            Navigator.of(context)
-                                                .pushReplacement(
-                                                    MaterialPageRoute(
-                                                        settings:
-                                                            RouteSettings(
-                                                                name: "home"),
-                                                        builder: (context) =>
-                                                            MyHomePage(
-                                                                employee:
-                                                                    employee,
-                                                                auth: _auth,
-                                                                edb: _edb)));
-                                          } else if (role == "Packager") {
-                                            Navigator.of(context)
-                                                .pushReplacement(
-                                                    MaterialPageRoute(
-                                                        settings:
-                                                            RouteSettings(
-                                                                name: "home"),
-                                                        builder: (context) =>
-                                                            PackagerHomePage(
-                                                                employee:
-                                                                    employee,
-                                                                auth: _auth,
-                                                                edb: _edb)));
-                                          }
-                                        });
-                                      });
+                                    if (x == false) {
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          // return object of type Dialog
+                                          return AlertDialog(
+                                            title: new Text("Error"),
+                                            content: new Text(
+                                                "Incorrect Login Details"),
+                                            actions: <Widget>[
+                                              // usually buttons at the bottom of the dialog
+                                              new FlatButton(
+                                                child: new Text("OK"),
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                },
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
                                     }
                                   }
                                 },

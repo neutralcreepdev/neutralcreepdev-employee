@@ -31,7 +31,7 @@ class AuthService {
     return user;
   }
 
-  Future<FirebaseUser> handleEmailSignIn(String email, String password) async {
+  Future<FirebaseUser> handleEmailSignIn(String email, String password, context) async {
     final FirebaseUser user = (await _auth.signInWithEmailAndPassword(
       email: email,
       password: password,

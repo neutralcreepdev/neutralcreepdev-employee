@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:neutral_creep_dev/pages/paymentPage.dart';
-import 'package:neutral_creep_dev/services/dbService.dart';
 
-import '../models/transaction.dart';
-import '../models/customer.dart';
 import '../models/delivery.dart';
 
 import '../helpers/color_helper.dart';
@@ -110,14 +106,6 @@ class _ItemsSummaryPageState extends State<ItemsSummaryPage> {
                         ],
                       ),
                       SizedBox(height: 10),
-//                      index + 1 != transaction.getCart().getCartSize()
-//                          ? Container(
-//                              width: MediaQuery.of(context).size.width - 30,
-//                              height: 1,
-//                              color: Colors.grey,
-//                            )
-//                          : Container(),
-//                      SizedBox(height: 10)
                     ],
                   );
                 },

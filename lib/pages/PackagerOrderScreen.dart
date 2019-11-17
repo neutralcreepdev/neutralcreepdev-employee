@@ -3,41 +3,29 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:neutral_creep_dev/models/delivery.dart';
-import 'package:neutral_creep_dev/pages/summaryPage.dart';
-import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/services.dart';
-import 'dart:developer';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'dart:async';
 import 'package:progress_dialog/progress_dialog.dart';
-import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../helpers/color_helper.dart';
 
-import '../models/cart.dart';
-import '../models/customer.dart';
 import '../models/employee.dart';
-import '../models/eWallet.dart';
-import '../models/transaction.dart';
 
 import '../services/authService.dart';
-import '../services/dbService.dart';
 import '../services/edbService.dart';
 
 import './profilePage.dart';
-import './eWalletPage.dart';
 import './startPage.dart';
-import './EmployeeDeliverySummary.dart';
 import './EmployeeDeliveryList.dart';
 import './EmployeeDeliveryHistory.dart';
-import './EmployeeDeliveryItems.dart';
 import './PackagerHomeScreen.dart';
 
 class PackagerOrderPage extends StatefulWidget {
   final Employee employee;
   final AuthService auth;
   final EDBService edb;
-  String transactionId;
+  final String transactionId;
 
   PackagerOrderPage({this.employee, this.auth, this.edb, this.transactionId});
 
@@ -63,29 +51,10 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
   bool lockerNum=false;
   TextEditingController lockerNo = new TextEditingController();
 
-  //
   _PackagerOrderPageState(
       {this.employee, this.auth, this.edb, this.transactionId});
 
   final databaseReference = Firestore.instance;
-
-  RefreshController _refreshController =
-      RefreshController(initialRefresh: false);
-
-  void _onRefresh() async {
-    // monitor network fetch
-    await Future.delayed(Duration(milliseconds: 1000));
-    // if failed,use refreshFailed()
-    _refreshController.refreshCompleted();
-  }
-
-  void _onLoading() async {
-    // monitor network fetch
-    await Future.delayed(Duration(milliseconds: 1000));
-    // if failed,use loadFailed(),if no data return,use LoadNodata()
-    if (mounted) setState(() {});
-    _refreshController.loadComplete();
-  }
 
   Future getData() async {
     var firestore = Firestore.instance;
@@ -95,58 +64,6 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
         .collection("Packaging")
         .getDocuments();
     return qn;
-  }
-
-  addDeliveryDialog(BuildContext context, Order order) {
-    // set up the buttons
-    Widget cancelButton = FlatButton(
-      child: Text("Cancel"),
-      onPressed: () {
-        Navigator.pop(context);
-      },
-    );
-    Widget continueButton = FlatButton(
-      child: Text("Confirm"),
-      onPressed: () async {
-        Fluttertoast.showToast(msg: "check woohoo: ${order.customerId}");
-        await Firestore.instance
-            .collection('Test Delivery')
-            .document(order.orderID)
-            .setData({
-          'transactionId': order.orderID,
-          'name': order.name,
-          'address': order.address,
-          'totalAmount': order.totalAmount,
-          'items': order.items,
-          'dateOfTransaction': order.date,
-          'customerId': order.customerId,
-        });
-
-        Navigator.pop(context);
-
-        Fluttertoast.showToast(
-            msg: "Successfully added to Delivery List!", fontSize: 16.0);
-        setState(() {});
-      },
-    );
-
-    // set up the AlertDialog
-    AlertDialog alert = AlertDialog(
-      title: Text("Add Delivery"),
-      content: Text("Do you want to add this order to your delivery list?"),
-      actions: [
-        cancelButton,
-        continueButton,
-      ],
-    );
-
-    // show the dialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return alert;
-      },
-    );
   }
 
   ProgressDialog showPR() {
@@ -290,7 +207,6 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
                 style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
               ),
               onTap: () {
-                print("before going to deliveryhistory page = ${employee.id}");
                 Navigator.of(context).pop();
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => DeliveryHistoryPage(
@@ -323,7 +239,7 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
           future: getData(),
           builder: (context, snapshot) {
             Delivery _deliveryList = new Delivery();
-
+            if (!snapshot.hasData) return Text('Loading...');
             if (initCount == 0) {
               if (snapshot.data.documents[0]['items'] != null) {
                 itemsCheck =
@@ -334,9 +250,6 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
                 initCount++;
               }
             }
-            print("employee.id = ${employee.id}");
-            if (!snapshot.hasData) return Text('Loading...');
-            //for (int i = 0; i < snapshot.data.documents.length; i++) {
 
             String orderIDTemp = snapshot.data.documents[0]['transactionId'];
             Map addressTemp = Map.from(snapshot.data.documents[0]['address']);
@@ -349,6 +262,7 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
                 snapshot.data.documents[0]['totalAmount'].toString());
             String customerIDTemp = snapshot.data.documents[0]['customerId'];
             String collectType = snapshot.data.documents[0]['collectType'];
+            Map timeArrival = snapshot.data.documents[0]['timeArrival'];
             Order order = new Order(
                 orderID: orderIDTemp,
                 name: nameTemp,
@@ -356,14 +270,10 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
                 date: dateTemp,
                 customerId: customerIDTemp,
                 items: items,
+                timeArrival: timeArrival,
                 totalAmount: totalAmountTemp);
 
             _deliveryList.addOrders(order);
-            print(
-                "check delivery list customerID = ${_deliveryList.getOrders(0).date}");
-            // }
-            print("check size = ${_deliveryList.getOrdersSize()}");
-            print("items length = ${order.items.length}");
 
             return Container(
               height: MediaQuery.of(context).size.height,
@@ -444,14 +354,7 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
                                   onChanged: (bool value) {
                                     setState(() {
                                       itemsCheck[index] = value;
-                                      for (int i = 0;
-                                          i < itemsCheck.length;
-                                          i++) {
-                                        print(
-                                            "checkbox tick? ${i + 1} : ${itemsCheck[i]}");
-                                      }
                                       done = allItemsPackaged(itemsCheck, collectType, lockerNum);
-                                      print("CHECK DONE: ${done}");
                                       //itemsCheck[index] = value;
                                     });
                                   },
@@ -478,7 +381,6 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
                       ],
                       controller: lockerNo,
                       onChanged: (text) {
-                        Fluttertoast.showToast(msg: "SEE TEXT: $lockerNum");
                         if(text.isEmpty)
                           lockerNum=false;
                         done=allItemsPackaged(itemsCheck, collectType, lockerNum);
@@ -487,7 +389,6 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
                       },
                       onFieldSubmitted: (term) {
                         lockerNum = lockerCheck(term);
-                        Fluttertoast.showToast(msg: "Check lockerNum status: ${lockerNum}");
                         done = allItemsPackaged(itemsCheck, collectType, lockerNum);
                         setState(() {});
                       },
@@ -530,6 +431,7 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
                                 'items': order.items,
                                 'dateOfTransaction': order.date,
                                 'customerId': order.customerId,
+                                'timeArrival': order.timeArrival,
                               });
                               //update data to employee
                               await Firestore.instance
@@ -567,7 +469,7 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
                             await Firestore.instance
                                 .collection('Staff')
                                 .document(employee.id)
-                                .collection('History')
+                                .collection('Staff History')
                                 .document(transactionId)
                                 .setData({
                               'transactionId': order.orderID,
@@ -577,6 +479,7 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
                               'items': order.items,
                               'dateOfTransaction': order.date,
                               'customerId': order.customerId,
+                              'employeeId': employee.id,
                             });
                             await Firestore.instance
                                 .collection('Staff')

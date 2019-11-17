@@ -141,7 +141,7 @@ class _PackagerHomePageState extends State<PackagerHomePage> {
                 onTap: () {
                   Navigator.of(context).pop();
                   Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => ProfilePage()));
+                      MaterialPageRoute(builder: (context) => ProfilePage(employee: employee, edb: edb)));
                 },
               ),
               SizedBox(height: 30),
@@ -192,6 +192,7 @@ class _PackagerHomePageState extends State<PackagerHomePage> {
               //List items;
               List<dynamic> items = new List<dynamic>();
               String collectType;
+              Map timeArrival;
               try {
                   checkPackaging().then((value) {
                     if (value > 0) {
@@ -213,8 +214,11 @@ class _PackagerHomePageState extends State<PackagerHomePage> {
                           snapshot.data.documents[0]['totalAmount'].toString());
                       customerId = snapshot.data.documents[0]['customerId'];
                       collectType = snapshot.data.documents[0]['collectType'];
+                      timeArrival = snapshot.data.documents[0]['timeArrival'];
                       ready = true;
                     }
+                  } else  {
+                    return Text("Loading");
                   }
                 }
               } catch (Exception) {
@@ -233,6 +237,7 @@ class _PackagerHomePageState extends State<PackagerHomePage> {
                           minWidth: 250,
                           child: Column(
                             children: <Widget>[
+                              Text("PRESS READY TO START PACKAGING"),
                               RaisedButton(
                                 color: harlequinGreen,
                                 onPressed: () async {
@@ -262,6 +267,7 @@ class _PackagerHomePageState extends State<PackagerHomePage> {
                                         'dateOfTransaction': date,
                                         'customerId': customerId,
                                         'collectType': collectType,
+                                        'timeArrival': timeArrival,
                                       });
                                       await Firestore.instance
                                           .collection('Packaging')
