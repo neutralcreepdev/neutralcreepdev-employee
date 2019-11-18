@@ -173,6 +173,10 @@ class _PackagerHomePageState extends State<PackagerHomePage> {
                   Navigator.of(context).pop();
                   Navigator.of(context).pushReplacement(
                       MaterialPageRoute(builder: (context) => StartPage()));
+//                  Navigator.of(context).pushAndRemoveUntil(
+//                      new MaterialPageRoute(
+//                          builder: (BuildContext context) => new StartPage()),
+//                          (Route<dynamic> route) => false);
                 },
               ),
             ],
@@ -222,7 +226,7 @@ class _PackagerHomePageState extends State<PackagerHomePage> {
                   }
                 }
               } catch (Exception) {
-                print("No Orders");
+                print("Already got an order in packaging database.");
               }
               return Container(
                   height: MediaQuery.of(context).size.height,
@@ -249,7 +253,6 @@ class _PackagerHomePageState extends State<PackagerHomePage> {
                                                   employee: employee,
                                                   auth: auth,
                                                   edb: edb,
-                                                  transactionId: transactionId,
                                                 )));
                                   } else {
                                     if (ready == true) {
@@ -288,7 +291,6 @@ class _PackagerHomePageState extends State<PackagerHomePage> {
                                                     employee: employee,
                                                     auth: auth,
                                                     edb: edb,
-                                                    transactionId: transactionId,
                                                   )));
                                     } else {
                                       noOrdersDialog(context);

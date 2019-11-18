@@ -25,12 +25,11 @@ class PackagerOrderPage extends StatefulWidget {
   final Employee employee;
   final AuthService auth;
   final EDBService edb;
-  final String transactionId;
 
-  PackagerOrderPage({this.employee, this.auth, this.edb, this.transactionId});
+  PackagerOrderPage({this.employee, this.auth, this.edb});
 
   _PackagerOrderPageState createState() => _PackagerOrderPageState(
-      employee: employee, auth: auth, edb: edb, transactionId: transactionId);
+      employee: employee, auth: auth, edb: edb);
 }
 
 class _PackagerOrderPageState extends State<PackagerOrderPage> {
@@ -38,7 +37,6 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
   final Employee employee;
   final AuthService auth;
   final EDBService edb;
-  String transactionId;
   QuerySnapshot addDoc;
   String result = "";
   Color bgColor = Colors.white;
@@ -52,7 +50,7 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
   TextEditingController lockerNo = new TextEditingController();
 
   _PackagerOrderPageState(
-      {this.employee, this.auth, this.edb, this.transactionId});
+      {this.employee, this.auth, this.edb});
 
   final databaseReference = Firestore.instance;
 
@@ -180,23 +178,6 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
                 Navigator.of(context).pop();
                 Navigator.of(context).push(
                     MaterialPageRoute(builder: (context) => ProfilePage()));
-              },
-            ),
-            SizedBox(height: 30),
-            InkWell(
-              child: Text(
-                "Current Deliveries",
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-              ),
-              onTap: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => DeliveryListPage(
-                          employee: employee,
-                          auth: auth,
-                          edb: edb,
-                        )));
               },
             ),
             SizedBox(height: 30),
@@ -438,7 +419,7 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
                                   .collection('users')
                                   .document(order.customerId)
                                   .collection(collectType)
-                                  .document(transactionId)
+                                  .document(order.orderID)
                                   .updateData({'status': "Packaged"});
                             } else if (collectType == "Self-Collect") {
                               //Add Self-Collect collection
@@ -460,7 +441,7 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
                                   .collection('users')
                                   .document(order.customerId)
                                   .collection(collectType)
-                                  .document(transactionId)
+                                  .document(order.orderID)
                                   .updateData({
                                 'status': "Self-Collect",
                                 'lockerNum': lockerNo.text,
@@ -470,7 +451,7 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
                                 .collection('Staff')
                                 .document(employee.id)
                                 .collection('Staff History')
-                                .document(transactionId)
+                                .document(order.orderID)
                                 .setData({
                               'transactionId': order.orderID,
                               'name': order.name,
@@ -485,7 +466,7 @@ class _PackagerOrderPageState extends State<PackagerOrderPage> {
                                 .collection('Staff')
                                 .document(employee.id)
                                 .collection('Packaging')
-                                .document(transactionId)
+                                .document(order.orderID)
                                 .delete();
 
                             Navigator.of(context)

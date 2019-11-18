@@ -30,6 +30,8 @@ dependencies:
   timeago: ^2.0.20
   progress_dialog: ^1.2.0
   pull_to_refresh: ^1.5.7
+  shared_preferences: ^0.4.3
+  encrypt: ^3.3.1
 
   firebase_core: ^0.4.0+9
   firebase_analytics: ^5.0.2

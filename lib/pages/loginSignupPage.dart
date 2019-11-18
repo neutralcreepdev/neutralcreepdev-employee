@@ -1,4 +1,8 @@
+import 'dart:typed_data';
+
+import 'package:encrypt/encrypt.dart' as encPkg;
 import 'package:flutter/material.dart';
+import 'package:encrypt/encrypt.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -6,6 +10,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:neutral_creep_dev/models/customer.dart';
 import 'package:neutral_creep_dev/models/employee.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers/color_helper.dart';
 
@@ -25,11 +30,66 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
   final _formKey = GlobalKey<FormState>();
   final _passKey = GlobalKey<FormFieldState>();
   final _auth = AuthService();
-
-  //final _db = DBService();
   final _edb = EDBService();
-  var isRememberMe = false;
+  bool isRememberMe = false;
   String _email, _password;
+  SharedPreferences sp;
+  TextEditingController emailText = new TextEditingController();
+  TextEditingController passwordText = new TextEditingController();
+
+  //Encryption AES and RSA
+  static final key = encPkg.Key.fromUtf8('CSIT-321 FYPQRCODEORDERINGSYSTEM');
+  final iv = IV.fromLength(16);
+  final enc = Encrypter(AES(key));
+
+  void initState() {
+    super.initState();
+    getEmailPassword();
+  }
+
+  _onChanged(bool value) async {
+    sp = await SharedPreferences.getInstance();
+    setState(() {
+      isRememberMe = value;
+      if(isRememberMe) {
+        if(emailText.text!="" && passwordText.text!="") {
+          final emailEnc = enc.encrypt(emailText.text, iv: iv);
+          final passwordEnc = enc.encrypt(passwordText.text, iv: iv);
+          sp.setBool("check", isRememberMe);
+          sp.setString("email", emailEnc.base64);
+          sp.setString("password", passwordEnc.base64);
+          sp.commit();
+          getEmailPassword();
+        }
+      } else {
+        sp.clear();
+      }
+
+    });
+  }
+
+  getEmailPassword() async {
+    sp = await SharedPreferences.getInstance();
+    setState(() {
+      isRememberMe = sp.getBool("check");
+      if (isRememberMe != null) {
+        if (isRememberMe) {
+          if(sp.getString("email")!="" && sp.getString("password")!="") {
+            String decEmailText = enc.decrypt64(sp.getString("email"), iv: iv);
+            String decPasswordText = enc.decrypt64(sp.getString("password"), iv: iv);
+            emailText.text = decEmailText;
+            passwordText.text = decPasswordText;
+          }
+        } else {
+          emailText.clear();
+          passwordText.clear();
+          sp.clear();
+        }
+      } else {
+        isRememberMe = false;
+      }
+    });
+  }
 
   Container buildLoginSignUpButtonContainer() {
     return Container(
@@ -69,37 +129,54 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
     );
   }
 
+//  Container buildRememberMeAndForgetPassContainer() {
+//    return Container(
+//      padding: EdgeInsets.only(left: 30, right: 30),
+//      child: Row(
+//        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//        children: <Widget>[
+//          InkWell(
+//            onTap: () {
+//              setState(() {
+//                if (isRememberMe) {
+//                  isRememberMe = false;
+//                } else {
+//                  isRememberMe = true;
+//                }
+//              });
+//            },
+//            child: Container(
+//                child: Row(
+//              children: <Widget>[
+//                isRememberMe
+//                    ? Icon(Icons.check_box)
+//                    : Icon(Icons.check_box_outline_blank),
+//               Text("Remember me",
+//                    style: TextStyle(fontWeight: FontWeight.bold)),
+//              ],
+//            )),
+//          ),
+//          Text(
+//            "Forget Password?",
+//            style: TextStyle(fontWeight: FontWeight.bold),
+//          )
+//        ],
+//      ),
+//    );
+//  }
+
   Container buildRememberMeAndForgetPassContainer() {
-    return Container(
-      padding: EdgeInsets.only(left: 30, right: 30),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return new Container(
+      padding: EdgeInsets.only(right: 20.0, left: 20.0),
+      child: new Column(
+        mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
-          InkWell(
-            onTap: () {
-              setState(() {
-                if (isRememberMe) {
-                  isRememberMe = false;
-                } else {
-                  isRememberMe = true;
-                }
-              });
-            },
-            child: Container(
-                child: Row(
-              children: <Widget>[
-                isRememberMe
-                    ? Icon(Icons.check_box)
-                    : Icon(Icons.check_box_outline_blank),
-                Text("Remember me",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-              ],
-            )),
+          new CheckboxListTile(
+            value: isRememberMe,
+            onChanged: _onChanged,
+            title: new Text("Remember Me"),
+            controlAffinity: ListTileControlAffinity.leading,
           ),
-          Text(
-            "Forget Password?",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          )
         ],
       ),
     );
@@ -221,6 +298,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
                               //  Email text form ====================================
                               TextFormField(
                                 textAlign: TextAlign.center,
+                                controller: emailText,
                                 decoration: InputDecoration(
                                   hintText: "EMAIL",
                                 ),
@@ -241,6 +319,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
                                 key: _passKey,
                                 obscureText: true,
                                 textAlign: TextAlign.center,
+                                controller: passwordText,
                                 decoration: InputDecoration(
                                   hintText: "PASSWORD",
                                 ),
@@ -295,6 +374,7 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
                                               .getEmployeeData(userValue.uid)
                                               .then((employee) {
                                             if (employee.role == "Delivery") {
+                                              _onChanged(isRememberMe);
                                               Navigator.of(context)
                                                   .pushReplacement(
                                                   MaterialPageRoute(
@@ -308,6 +388,15 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
                                                               auth: _auth,
                                                               edb: _edb)));
                                             } else if (employee.role == "Packer") {
+//                                              Navigator.of(context).pushAndRemoveUntil(
+//                                                  new MaterialPageRoute(
+//                                                      builder: (BuildContext context) => new PackagerHomePage(
+//                                                          employee:
+//                                                          employee,
+//                                                          auth: _auth,
+//                                                          edb: _edb)),
+//                                                      (Route<dynamic> route) => false);
+                                            _onChanged(isRememberMe);
                                               Navigator.of(context)
                                                   .pushReplacement(
                                                   MaterialPageRoute(
@@ -372,9 +461,6 @@ class _LoginSignUpPageState extends State<LoginSignUpPage> {
                 ),
               ),
             ),
-
-            //  facebook and google signup/login container ====================================
-            buildSocialSignUpContainer()
           ],
         ),
       ),
