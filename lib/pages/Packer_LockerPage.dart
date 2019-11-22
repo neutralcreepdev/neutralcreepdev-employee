@@ -1,11 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:neutral_creep_dev/services/edbService.dart';
 import './Packer_MainPage.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/employee.dart';
 import '../models/delivery.dart';
+
 
 class PackerLockerPageWidget extends StatefulWidget {
   final Employee employee;
@@ -24,7 +26,21 @@ class _PackerLockerPageWidgetState extends State<PackerLockerPageWidget> {
   _PackerLockerPageWidgetState({this.employee, this.order, this.edb});
 
   void enteredLockerNum(BuildContext context) async {
+
     if (lockerNum) {
+      showDialog(
+          context: context,
+          builder: (context) {
+            Future.delayed(Duration(seconds: 3), () {
+            });
+            return Dialog(
+                backgroundColor:
+                Colors.transparent,
+                child: SpinKitRotatingCircle(
+                  color: Colors.white,
+                  size: 50.0,
+                ));
+          });
         //Add Self-Collect collection
         await Firestore.instance
             .collection('Self-Collect')
@@ -75,6 +91,9 @@ class _PackerLockerPageWidgetState extends State<PackerLockerPageWidget> {
             employee: employee,
             edb: edb,
           )));
+
+      Fluttertoast.showToast(
+          msg: "Successfully packaged order!", fontSize: 16.0);
     } else {
       Fluttertoast.showToast(
           msg: "Please enter a valid locker number!");
@@ -193,11 +212,14 @@ class _PackerLockerPageWidgetState extends State<PackerLockerPageWidget> {
                                         controller: lockerNo,
                                         keyboardType: TextInputType.number,
                                         onChanged: (text) {
-                                          lockerNum=true;
-                                          if (text.length==0 || text.isEmpty||text==""||text==null)
+                                          lockerNum=false;
+                                          try {
+                                            if (int.parse(text) > 0 &&
+                                                int.parse(text) <= 100)
+                                              lockerNum = true;
+                                          } catch(Exception) {
                                             lockerNum=false;
-                                          if(int.parse(text) < 0 || int.parse(text) > 100)
-                                            lockerNum=false;
+                                          }
                                           setState(() {
                                           });
                                         },

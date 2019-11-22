@@ -1,12 +1,46 @@
-
 import 'package:flutter/material.dart';
-
-
-class FirstPageWidget extends StatelessWidget {
+import 'dart:async';
+import './LoginPage.dart';
+class FirstPageWidget extends StatefulWidget {
   
   @override
+  _FirstPageWidgetState createState() => _FirstPageWidgetState();
+}
+
+class _FirstPageWidgetState extends State<FirstPageWidget> {
+
+  Timer _timer;
+
+  int _start = 3;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    startTimer();
+  }
+
+  void startTimer() {
+    const oneSec = const Duration(seconds: 1);
+    _timer = new Timer.periodic(
+      oneSec,
+          (Timer timer) => setState(
+            () {
+          if (_start < 1) {
+            timer.cancel();
+            Navigator.pushReplacement(context, MaterialPageRoute(
+                builder: (context) => LoginPageWidget()));
+          } else {
+            _start = _start - 1;
+          }
+        },
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-  
+
     return Scaffold(
       body: Container(
         constraints: BoxConstraints.expand(),
@@ -28,7 +62,7 @@ class FirstPageWidget extends StatelessWidget {
               ),
             ),
             Positioned(
-              top: 561,
+              top: 600,
               child: Text(
                 "employee version",
                 style: TextStyle(

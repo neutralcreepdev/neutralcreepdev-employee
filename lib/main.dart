@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import './pages/LoginPage.dart';
+import './pages/FirstPage.dart';
 import './Helper/ColorHelper.dart';
 
 void main() => runApp(MaterialApp(
   title: "Neutal Creep",
   debugShowCheckedModeBanner: false,
-  home: LoginPageWidget(),theme: ThemeData(
+  home: FirstPageWidget(),theme: ThemeData(
   primaryColor: pink,
   accentColor: black,
   backgroundColor: white,

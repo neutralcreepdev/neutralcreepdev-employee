@@ -1,26 +1,16 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import './Packer_MainPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import './Delivery_MainPage.dart';
-
 import 'package:encrypt/encrypt.dart' as encPkg;
-import 'package:flutter/material.dart';
 import 'package:encrypt/encrypt.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:neutral_creep_dev/models/employee.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import './Packer_MainPage.dart';
+import './Delivery_MainPage.dart';
 import '../services/authService.dart';
 import '../services/edbService.dart';
-
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 
 
 class LoginPageWidget extends StatefulWidget {

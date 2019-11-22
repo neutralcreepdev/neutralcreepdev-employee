@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-import '../models/employee.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import '../services/edbService.dart';
-import './DeliveryConfirmationPage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/delivery.dart';
-import 'package:neutral_creep_dev/pages/LoginPage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import './DeliveryConfirmationPage.dart';
+import './LoginPage.dart';
+import '../models/employee.dart';
+import '../models/delivery.dart';
+import '../services/edbService.dart';
+
+
 
 class DeliveryMainPageWidget extends StatefulWidget {
   final Employee employee;
@@ -53,13 +55,14 @@ class _DeliveryMainPageState extends State<DeliveryMainPageWidget> {
   Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (context) => LoginPageWidget()));}
 
-  void showMoreInfo(Employee employee, BuildContext context, String type, Order order) {
-    showDialog(
+  void showMoreInfo(Employee employee, BuildContext context, String type, Order order) async{
+   await showDialog(
         context: context,
         builder: (BuildContext context) {
           // return object of type Dialog
           return MyDialog(employee: employee, type: type, order: order);
         });
+   setState((){});
   }
 
   void onPackagesPressed(BuildContext context) {
@@ -464,6 +467,8 @@ class _MyDialogState extends State<MyDialog> {
   void confirmDelivery(BuildContext context, Employee employee, Order order) {
     Navigator.push(context,
         MaterialPageRoute(builder: (context) => DeliveryConfirmationPageWidget(employee: employee, order: order)));
+    setState(() {
+    });
   }
 
   addDeliveryDialog(Employee employee, BuildContext context, Order order) {
@@ -478,7 +483,19 @@ class _MyDialogState extends State<MyDialog> {
     Widget continueButton = FlatButton(
       child: Text("Confirm"),
       onPressed: () async {
-
+        showDialog(
+            context: context,
+            builder: (context) {
+              Future.delayed(Duration(seconds: 3), () {
+              });
+              return Dialog(
+                  backgroundColor:
+                  Colors.transparent,
+                  child: SpinKitRotatingCircle(
+                    color: Colors.white,
+                    size: 50.0,
+                  ));
+            });
         await Firestore.instance
             .collection('Staff')
             .document(employee.id)
@@ -510,12 +527,10 @@ class _MyDialogState extends State<MyDialog> {
             .delete();
 
         Navigator.popUntil(context, ModalRoute.withName('home'));
-
+//        Navigator.of(context).pushReplacement(MaterialPageRoute(
+//            builder: (context) => DeliveryMainPageWidget()));
         Fluttertoast.showToast(
             msg: "Successfully added to Delivery List!", fontSize: 16.0);
-        setState(() {
-        });
-
       },
     );
     // set up the AlertDialog
@@ -723,9 +738,7 @@ class _MyDialogState extends State<MyDialog> {
                       child: FlatButton(
                     color: Theme.of(context).primaryColor,
                     onPressed: () async {
-                      addDeliveryDialog(employee, context, order);
-                      setState(() {
-                      });},
+                        addDeliveryDialog(employee, context, order);},
                     textColor: Colors.white,
                     padding: EdgeInsets.all(0),
                     child: Text(

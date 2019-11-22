@@ -1,17 +1,14 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:neutral_creep_dev/pages/LoginPage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/employee.dart';
-import '../services/authService.dart';
-import '../services/edbService.dart';
-import 'package:flutter/material.dart';
-import './Packer_PackingPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'dart:async';
-import '../models/delivery.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-//import 'package:http/http.dart' as link;
-//import 'dart:convert';
+import 'dart:async';
+import '../models/employee.dart';
+import '../services/edbService.dart';
+import './Packer_PackingPage.dart';
+import '../models/delivery.dart';
 
 class PackerMainPageWidget extends StatefulWidget {
   final Employee employee;
@@ -85,6 +82,17 @@ class _PackerMainPageWidgetState extends State<PackerMainPageWidget> {
               )));
     } else {
       if (ready == true) {
+        showDialog(
+            context: context,
+            builder: (context) {
+              Future.delayed(Duration(seconds: 3), () {});
+              return Dialog(
+                  backgroundColor: Colors.transparent,
+                  child: SpinKitRotatingCircle(
+                    color: Colors.white,
+                    size: 50.0,
+                  ));
+            });
         await Firestore.instance
             .collection('Staff')
             .document(employee.id)
@@ -149,11 +157,69 @@ class _PackerMainPageWidgetState extends State<PackerMainPageWidget> {
     QuerySnapshot qn = await firestore.collection('Packaging').getDocuments();
     return qn;
   }
-//
-//  Future<String> quoteOfTheDay() async {
-//    final res = await link.get('http://quotes.rest/qod.json');
-//    return json.decode(res.body)['contents']['quotes'][0]['quote'];
-//  }
+
+  Map quoteOfTheDay() {
+    Map quoteMap = new Map();
+    int modDate = 0;
+    try {
+      String dateStr = DateTime.now().toString().substring(8, 10);
+      int date = int.parse(dateStr);
+      modDate = date % 7;
+      switch (modDate) {
+        case 0:
+         quoteMap =  {
+           'quote':
+           "The strength of the team is each individual member. The strength of each member is the team.",
+           "author": "Phil Jackson",
+         };
+          break;
+        case 1:
+          quoteMap =  {
+            'quote':
+            "Unity is strength. . . when there is teamwork and collaboration, wonderful things can be achieved.",
+            "author": "Mattie Stepanek",
+          };
+          break;
+        case 2:
+          quoteMap =  {
+            'quote':
+            "The best teamwork comes from men who are working independently toward one goal in unison.",
+            "author": "James Cash Penney",
+          };
+          break;
+
+        case 3:
+          quoteMap =  {
+            'quote':
+            "Alone we can do so little, together we can do so much.",
+            "author": "Helen Keller",
+          };
+          break;
+        case 4: quoteMap = {
+          'quote':
+          "Individual commitment to a group effort--that is what makes a team work, a company work, a society work, a civilization work.",
+          "author": "Vince Lombardi",
+        };
+        break;
+        case 5: quoteMap = {
+'quote' : "Collaboration allows teachers to capture each other's fund of collective intelligence",
+          'author': "Mike Schmoker"
+        };
+        break;
+        case 6: quoteMap= {
+'quote': "Coming together is a beginning. Keeping together is progress. Working together is success.",
+          'author': "Henry Ford"
+        };
+        break;
+        default: break;
+      }
+    } catch (Exception) {
+      quoteMap = {"quote": "", "author": ""};
+    }
+    return quoteMap;
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -243,29 +309,33 @@ class _PackerMainPageWidgetState extends State<PackerMainPageWidget> {
                         children: <Widget>[
                           Expanded(
                             flex: 2,
-                            child: Text("Quote of the day"),
-//                            child: FutureBuilder(
-//                                future: quoteOfTheDay(),
-//                                builder: (context, snapshot) {
-//                                  return snapshot.connectionState == ConnectionState.done
-//                                      ? Center(
-//                                      child: Column(
-//                                        children: <Widget>[
-//                                          Text(
-//                                            "Quote of the day",
-//                                            textAlign: TextAlign.center,
-//                                        style: TextStyle(fontSize: 20),
-//                                          ),
-//                                          SizedBox(height:2),
-//                                          Text(
-//                                            snapshot.data??"",
-//                                            textAlign: TextAlign.center,
-//                                            style: TextStyle(fontSize: 10),
-//                                          ),
-//                                        ],
-//                                      ))
-//                                      : Center(child: CircularProgressIndicator());
-//                                }),
+                            child: Column(
+                              children: <Widget>[
+                                Text("Quote of the day",
+                                    style: TextStyle(fontSize: 15)),
+                                SizedBox(height: 15),
+                                Container(
+                                    width: 270,
+                                    child: Column(
+                                      children: <Widget>[
+                                        Text(
+                                          quoteOfTheDay()['quote'],
+                                          style: TextStyle(fontSize: 16),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        SizedBox(height: 5),
+                                        Align(
+                                          alignment: Alignment.bottomRight,
+                                          child: Text(
+                                            "- ${quoteOfTheDay()['author']}",
+                                            style: TextStyle(fontSize: 14),
+                                            textAlign: TextAlign.right,
+                                          ),
+                                        ),
+                                      ],
+                                    )),
+                              ],
+                            ),
                           ),
                           Expanded(
                             flex: 1,
@@ -345,13 +415,7 @@ class _PackerMainPageWidgetState extends State<PackerMainPageWidget> {
                                                 ready = true;
                                               }
                                             } else {
-                                              return Dialog(
-                                                  backgroundColor:
-                                                  Colors.transparent,
-                                                  child: SpinKitRotatingCircle(
-                                                    color: Colors.white,
-                                                    size: 50.0,
-                                                  ));
+                                              return Text("Loading...");
                                             }
                                           }
                                         } catch (Exception) {

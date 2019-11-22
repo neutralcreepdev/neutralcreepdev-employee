@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class Delivery {
   List<Order> orders = new List<Order>();
 
