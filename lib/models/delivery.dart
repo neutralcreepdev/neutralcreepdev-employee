@@ -32,7 +32,9 @@ class Order {
   List items;
   double totalAmount;
   String collectType;
-  Map timeArrival;
+  Map timeArrival ={'date': {'day':"", 'month':"", 'year':""}, 'time': ""};
+  Map actualTime = {'date': {'day':"", 'month':"", 'year':""}, 'time': ""};
+
   String status;
   String paymentType;
 
@@ -47,7 +49,8 @@ class Order {
       this.collectType,
         this.status,
         this.paymentType,
-      this.timeArrival});
+      this.timeArrival,
+      this.actualTime});
 
   @override
   String toString() {
@@ -56,5 +59,18 @@ class Order {
         "LOCATION: ${address['street']}\n"
         "UNIT: ${address['unit']}\n"
         "POSTAL CODE: ${address['postalCode']}\n";
+  }
+
+  String expectedTimeString() {
+    return "${timeArrival['date']['day']}/${timeArrival['date']['month']}/${timeArrival['date']['year']} ${timeArrival['time']}";
+  }
+
+  String actualTimeString() {
+    return "${actualTime['date']['day']}/${actualTime['date']['month']}/${actualTime['date']['year']} ${actualTime['time']}";
+  }
+
+  String packerHistoryInfo(){
+    return "ORDER#$orderID\n"
+        "NAME: $name\n";
   }
 }

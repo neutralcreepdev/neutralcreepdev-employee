@@ -1,13 +1,8 @@
-import './transaction.dart';
+
 import './user.dart';
-import './eWallet.dart';
-import './cart.dart';
 import './delivery.dart';
 
 class Employee extends User {
-  //EWallet eWallet;
-  List<Transaction> transactions;
-  Cart currentCart;
   Delivery currentOrders;
   String gender;
   String role;
@@ -23,9 +18,7 @@ class Employee extends User {
         this.gender,
         this.role,
         this.email,
-        this.currentOrders,
-      this.transactions,
-      this.currentCart})
+        this.currentOrders,})
       : super(id, firstName, lastName, dob, contactNum, address);
 
   factory Employee.fromMap(Map data) {
@@ -48,10 +41,6 @@ class Employee extends User {
         role: data["role"] ?? "",
         email: data["email"] ?? "",
         currentOrders: new Delivery());
-  }
-
-  void clearCart() {
-    currentCart.clear();
   }
 
   void clearDeliveries() {
