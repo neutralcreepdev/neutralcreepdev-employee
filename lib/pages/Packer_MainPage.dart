@@ -167,59 +167,66 @@ class _PackerMainPageWidgetState extends State<PackerMainPageWidget> {
       modDate = date % 7;
       switch (modDate) {
         case 0:
-         quoteMap =  {
-           'quote':
-           "The strength of the team is each individual member. The strength of each member is the team.",
-           "author": "Phil Jackson",
-         };
+          quoteMap = {
+            'quote':
+                "The strength of the team is each individual member. The strength of each member is the team.",
+            "author": "Phil Jackson",
+          };
           break;
         case 1:
-          quoteMap =  {
+          quoteMap = {
             'quote':
-            "Unity is strength. . . when there is teamwork and collaboration, wonderful things can be achieved.",
+                "Unity is strength. . . when there is teamwork and collaboration, wonderful things can be achieved.",
             "author": "Mattie Stepanek",
           };
           break;
         case 2:
-          quoteMap =  {
+          quoteMap = {
             'quote':
-            "The best teamwork comes from men who are working independently toward one goal in unison.",
+                "The best teamwork comes from men who are working independently toward one goal in unison.",
             "author": "James Cash Penney",
           };
           break;
 
         case 3:
-          quoteMap =  {
-            'quote':
-            "Alone we can do so little, together we can do so much.",
+          quoteMap = {
+            'quote': "Alone we can do so little, together we can do so much.",
             "author": "Helen Keller",
           };
           break;
-        case 4: quoteMap = {
-          'quote':
-          "Individual commitment to a group effort--that is what makes a team work, a company work, a society work, a civilization work.",
-          "author": "Vince Lombardi",
-        };
-        break;
-        case 5: quoteMap = {
-'quote' : "Collaboration allows teachers to capture each other's fund of collective intelligence",
-          'author': "Mike Schmoker"
-        };
-        break;
-        case 6: quoteMap= {
-'quote': "Coming together is a beginning. Keeping together is progress. Working together is success.",
-          'author': "Henry Ford"
-        };
-        break;
-        default: break;
+        case 4:
+          quoteMap = {
+            'quote':
+                "Individual commitment to a group effort--that is what makes a team work, a company work, a society work, a civilization work.",
+            "author": "Vince Lombardi",
+          };
+          break;
+        case 5:
+          quoteMap = {
+            'quote':
+                "Collaboration allows teachers to capture each other's fund of collective intelligence",
+            'author': "Mike Schmoker"
+          };
+          break;
+        case 6:
+          quoteMap = {
+            'quote':
+                "Coming together is a beginning. Keeping together is progress. Working together is success.",
+            'author': "Henry Ford"
+          };
+          break;
+        default:
+          break;
       }
     } catch (Exception) {
-      quoteMap = {"quote": "", "author": ""};
+      quoteMap = {
+        'quote':
+            "The strength of the team is each individual member. The strength of each member is the team.",
+        "author": "Phil Jackson",
+      };
     }
     return quoteMap;
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -290,7 +297,7 @@ class _PackerMainPageWidgetState extends State<PackerMainPageWidget> {
                                 child: Padding(
                                   padding: EdgeInsets.only(bottom: 10),
                                   child: Text(
-                                    "Log Out",
+                                    "Logout",
                                     style: TextStyle(
                                         fontSize: 20,
                                         color: Theme.of(context).primaryColor),
@@ -308,7 +315,7 @@ class _PackerMainPageWidgetState extends State<PackerMainPageWidget> {
                       child: Column(
                         children: <Widget>[
                           Expanded(
-                            flex: 2,
+                            flex: 3,
                             child: Column(
                               children: <Widget>[
                                 Text("Quote of the day",
@@ -320,7 +327,9 @@ class _PackerMainPageWidgetState extends State<PackerMainPageWidget> {
                                       children: <Widget>[
                                         Text(
                                           quoteOfTheDay()['quote'],
-                                          style: TextStyle(fontSize: 16),
+                                          style: TextStyle(
+                                              fontSize: 16,
+                                              fontFamily: "MontserratI"),
                                           textAlign: TextAlign.center,
                                         ),
                                         SizedBox(height: 5),
@@ -338,7 +347,7 @@ class _PackerMainPageWidgetState extends State<PackerMainPageWidget> {
                             ),
                           ),
                           Expanded(
-                            flex: 1,
+                            flex: 0,
                             child: Container(
                                 color: Theme.of(context).canvasColor,
                                 width: MediaQuery.of(context).size.width,
@@ -447,8 +456,7 @@ class _PackerMainPageWidgetState extends State<PackerMainPageWidget> {
                                             child: Text(
                                               "Ready to start packing",
                                               style: TextStyle(
-                                                fontSize: 30,
-                                                fontFamily: "Air Americana",
+                                                fontSize: 25,
                                               ),
                                               textAlign: TextAlign.center,
                                             ),
@@ -462,25 +470,22 @@ class _PackerMainPageWidgetState extends State<PackerMainPageWidget> {
                             child: Container(
                               width: MediaQuery.of(context).size.width,
                               child: Padding(
-                                padding: EdgeInsets.all(30),
+                                padding: EdgeInsets.all(20),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
-                                    Expanded(
-                                      child: Text(
-                                        "History",
-                                        style: TextStyle(
-                                          color: Theme.of(context).accentColor,
-                                          fontSize: MediaQuery.of(context)
-                                                  .size
-                                                  .width *
-                                              0.12,
-                                          letterSpacing: 3,
-                                          fontFamily: "Air Americana",
-                                        ),
-                                        textAlign: TextAlign.left,
+                                    Text(
+                                      "History",
+                                      style: TextStyle(
+                                        color: Theme.of(context).accentColor,
+                                        fontSize:
+                                            MediaQuery.of(context).size.width *
+                                                0.08,
+                                        letterSpacing: 3,
                                       ),
+                                      textAlign: TextAlign.left,
                                     ),
+                                    SizedBox(height: 25),
                                     Expanded(
                                       flex: 5,
                                       child: FutureBuilder(
@@ -576,11 +581,7 @@ class _PackerMainPageWidgetState extends State<PackerMainPageWidget> {
                                                                     .size
                                                                     .width *
                                                                 0.97,
-                                                            height: MediaQuery.of(
-                                                                        context)
-                                                                    .size
-                                                                    .height *
-                                                                0.1,
+                                                            height: 100,
                                                             decoration:
                                                                 BoxDecoration(
                                                               color: Theme.of(
@@ -593,26 +594,39 @@ class _PackerMainPageWidgetState extends State<PackerMainPageWidget> {
                                                             ),
                                                             child: Align(
                                                               child: Container(
-                                                                  width: MediaQuery.of(context)
+                                                                  width: MediaQuery.of(
+                                                                              context)
                                                                           .size
                                                                           .width *
-                                                                      0.965,
-                                                                  height: MediaQuery.of(context)
-                                                                          .size
-                                                                          .height *
-                                                                      0.098,
+                                                                      0.915,
+                                                                  height: 95,
                                                                   decoration: BoxDecoration(
-                                                                      color: Theme.of(context)
+                                                                      color: Theme.of(
+                                                                              context)
                                                                           .backgroundColor,
-                                                                      borderRadius: BorderRadius.circular(
-                                                                          5),
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                              5),
                                                                       border: Border.all(
                                                                           width:
                                                                               1,
-                                                                          color: Theme.of(context)
-                                                                              .cardColor)),
-                                                                  child: Center(
-                                                                      child: Text(_deliveryList.getOrders(index).toString()))),
+                                                                          color:
+                                                                              Theme.of(context).cardColor)),
+                                                                  child: Row(
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .center,
+                                                                    children: <
+                                                                        Widget>[
+                                                                      SizedBox(
+                                                                          width:
+                                                                              150),
+                                                                      Text(_deliveryList
+                                                                          .getOrders(
+                                                                              index)
+                                                                          .toString()),
+                                                                    ],
+                                                                  )),
                                                               alignment:
                                                                   Alignment
                                                                       .topLeft,
@@ -706,8 +720,10 @@ class _MyDialogState extends State<MyDialog> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Text(
-                          "OrderID: ${order.orderID}",
-                          style: TextStyle(fontSize: 40),
+                          "Order#${order.orderID}",
+                          style: TextStyle(
+                            fontSize: 30,
+                          ),
                         ),
                       ],
                     )),
@@ -723,13 +739,13 @@ class _MyDialogState extends State<MyDialog> {
                     children: <Widget>[
                       Expanded(child: SizedBox(width: 10)),
                       Expanded(
-                        flex: 2,
+                        flex: 3,
                         child: Container(
                             width: MediaQuery.of(context).size.width / 8,
                             child: Text("No.", style: TextStyle(fontSize: 20))),
                       ),
                       Expanded(
-                        flex: 2,
+                        flex: 3,
                         child: Container(
                           width: MediaQuery.of(context).size.width / 8 * 4 - 40,
                           child: Text("Item", style: TextStyle(fontSize: 20)),
@@ -737,7 +753,7 @@ class _MyDialogState extends State<MyDialog> {
                       ),
                       Expanded(flex: 4, child: SizedBox(width: 10)),
                       Expanded(
-                        flex: 2,
+                        flex: 3,
                         child: Container(
                           width: MediaQuery.of(context).size.width / 8 + 10,
                           child: Text("Qty", style: TextStyle(fontSize: 20)),
@@ -766,7 +782,7 @@ class _MyDialogState extends State<MyDialog> {
                                   children: <Widget>[
                                     Expanded(child: SizedBox(width: 10)),
                                     Expanded(
-                                      flex: 2,
+                                      flex: 3,
                                       child: Container(
                                           width: MediaQuery.of(context)
                                                   .size
@@ -776,7 +792,7 @@ class _MyDialogState extends State<MyDialog> {
                                               style: TextStyle(fontSize: 18))),
                                     ),
                                     Expanded(
-                                      flex: 2,
+                                      flex: 6,
                                       child: Container(
                                         width:
                                             MediaQuery.of(context).size.width /
@@ -789,9 +805,9 @@ class _MyDialogState extends State<MyDialog> {
                                       ),
                                     ),
                                     Expanded(
-                                        flex: 4, child: SizedBox(width: 10)),
+                                        flex: 1, child: SizedBox(width: 10)),
                                     Expanded(
-                                      flex: 2,
+                                      flex: 3,
                                       child: Container(
                                         width:
                                             MediaQuery.of(context).size.width /

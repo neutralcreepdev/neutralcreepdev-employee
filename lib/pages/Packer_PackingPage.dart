@@ -21,8 +21,6 @@ class PackerPackingPageWidget extends StatefulWidget {
       _PackerPackingPageWidgetState(employee: employee, edb: edb);
 }
 
-bool val = false;
-
 class _PackerPackingPageWidgetState extends State<PackerPackingPageWidget> {
   final Employee employee;
   final EDBService edb;
@@ -32,7 +30,6 @@ class _PackerPackingPageWidgetState extends State<PackerPackingPageWidget> {
   bool done = false;
   int initCount = 0;
   List<bool> itemsCheck;
-  bool lockerNum = false;
   final databaseReference = Firestore.instance;
 
   void onPackingDone(BuildContext context, Order order) async {
@@ -289,14 +286,14 @@ class _PackerPackingPageWidgetState extends State<PackerPackingPageWidget> {
                                               .width *
                                               0.12,
                                           letterSpacing: 3,
-                                          fontFamily: "Air Americana",
                                         ),
                                         textAlign: TextAlign.left,
                                       ),
                                       Text(
-                                        "OrderID: ${order.orderID}",
+                                        "Order ID: ${order.orderID}",
                                         style: TextStyle(fontSize: 20),
                                       ),
+                                      Text("Delivery method: ${order.collectType}" ,style: TextStyle(fontSize: 20),),
                                     ],
                                   ),
                                 ),
@@ -353,7 +350,7 @@ class _PackerPackingPageWidgetState extends State<PackerPackingPageWidget> {
                                                   style: TextStyle(
                                                       fontWeight: FontWeight
                                                           .bold,
-                                                      fontSize: 20))),
+                                                      fontSize: 20,))),
                                           Container(
                                             width: MediaQuery
                                                 .of(context)
@@ -539,11 +536,16 @@ class _PackerPackingPageWidgetState extends State<PackerPackingPageWidget> {
                                   ),
                                   textColor: Colors.white,
                                   padding: EdgeInsets.all(0),
-                                  child: Text(
-                                    "Done Packing",
+                                  child: order.collectType=="Self-Collect"?Text(
+                                    "Proceed to input locker number",
                                     style: TextStyle(
-                                      fontSize: 30,
-                                      fontFamily: "Air Americana",
+                                      fontSize: 25,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ):Text(
+                                    "Complete packing",
+                                    style: TextStyle(
+                                      fontSize: 25,
                                     ),
                                     textAlign: TextAlign.center,
                                   ),

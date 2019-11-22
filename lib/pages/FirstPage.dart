@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import './LoginPage.dart';
+
 class FirstPageWidget extends StatefulWidget {
-  
   @override
   _FirstPageWidgetState createState() => _FirstPageWidgetState();
 }
 
 class _FirstPageWidgetState extends State<FirstPageWidget> {
-
   Timer _timer;
 
   int _start = 3;
@@ -24,12 +23,12 @@ class _FirstPageWidgetState extends State<FirstPageWidget> {
     const oneSec = const Duration(seconds: 1);
     _timer = new Timer.periodic(
       oneSec,
-          (Timer timer) => setState(
-            () {
+      (Timer timer) => setState(
+        () {
           if (_start < 1) {
             timer.cancel();
-            Navigator.pushReplacement(context, MaterialPageRoute(
-                builder: (context) => LoginPageWidget()));
+            Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (context) => LoginPageWidget()));
           } else {
             _start = _start - 1;
           }
@@ -40,7 +39,6 @@ class _FirstPageWidgetState extends State<FirstPageWidget> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       body: Container(
         constraints: BoxConstraints.expand(),
@@ -64,13 +62,11 @@ class _FirstPageWidgetState extends State<FirstPageWidget> {
             Positioned(
               top: 600,
               child: Text(
-                "employee version",
+                "Employee Version",
                 style: TextStyle(
-                  color: Color.fromARGB(255, 0, 0, 0),
-                  fontSize: 20,
-                  letterSpacing: 1.2,
-                  fontFamily: "Air Americana",
-                ),
+                    color: Color.fromARGB(255, 0, 0, 0),
+                    fontSize: 20,
+                    letterSpacing: 1.2),
                 textAlign: TextAlign.left,
               ),
             ),

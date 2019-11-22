@@ -27,6 +27,11 @@ class _DeliveryConfirmationPageWidgetState
   final Order order;
 
   _DeliveryConfirmationPageWidgetState({this.employee, this.order});
+  bool delivered = false;
+  Timer time;
+  Icon icon= Icon(FontAwesomeIcons.timesCircle, color: Colors.red);
+  Map arrivedTime;
+  Map expectedTime;
 
   void onDeliveryComplete(BuildContext context) async {
     DateTime now = new DateTime.now();
@@ -44,11 +49,9 @@ class _DeliveryConfirmationPageWidgetState
       showDialog(
           context: context,
           builder: (context) {
-            Future.delayed(Duration(seconds: 3), () {
-            });
+            Future.delayed(Duration(seconds: 2), () {});
             return Dialog(
-                backgroundColor:
-                Colors.transparent,
+                backgroundColor: Colors.transparent,
                 child: SpinKitRotatingCircle(
                   color: Colors.white,
                   size: 50.0,
@@ -121,11 +124,7 @@ class _DeliveryConfirmationPageWidgetState
     }
   }
 
-  bool delivered = false;
-  Timer time;
-  Icon icon;
-  Map arrivedTime;
-  Map expectedTime;
+
 
   String hashData(Order order) {
     String newDate =
@@ -169,9 +168,8 @@ class _DeliveryConfirmationPageWidgetState
   }
 
   void initState() {
-
     time = Timer.periodic(Duration(milliseconds: 10), (Timer t) {
-      if(mounted) {
+      if (mounted) {
         setState(() {
           if (delivered == true)
             icon = Icon(FontAwesomeIcons.checkCircle, color: Colors.green);
@@ -188,63 +186,64 @@ class _DeliveryConfirmationPageWidgetState
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-
-        child: FutureBuilder(
-            future: getData(),
-            builder: (context, snapshot) {
-              bool x = false;
-              if (!snapshot.hasData) {
-                x = true;
-                if (x == true) {
-                  return Dialog(
-                      backgroundColor: Colors.transparent,
-                      child: SpinKitRotatingCircle(
-                        color: Colors.white,
-                        size: 50.0,
-                      ));
-                }
-                return null;
-              }else {
-                if(x==true) {
-                  x=false;
-                  Navigator.pop(context);
-                }
-                for (int i = 0; i < snapshot.data.documents.length; i++) {
-                  if (snapshot.data.documents[i]['transactionId'] ==
-                      order.orderID) {
-                    if (snapshot.data.documents[i]['status'] == "Delivered") {
-                      delivered = true;
-                    }
-                  }
-                }
-              }
-
-              return Container(
+              child: Container(
                 width: MediaQuery.of(context).size.width,
                 height: MediaQuery.of(context).size.height,
                 constraints: BoxConstraints.expand(),
                 decoration: BoxDecoration(
                   color: Theme.of(context).backgroundColor,
                 ),
-
                 child: Column(
                   children: <Widget>[
                     Container(
                       child: Column(
                         children: [
                           Container(
-//                            child: Icon(
-//                              Icons.arrow_back,
-//                              color: Colors.black,
-//
-//                            ),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: IconButton(
-                              icon: Icon(Icons.arrow_back, color: Colors.black),
-                              onPressed:(){Navigator.popUntil(context, ModalRoute.withName('home'));}
+                            child: Row(
+                              children: <Widget>[
+                                Expanded(
+                                  child: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: IconButton(
+                                        icon: Icon(Icons.arrow_back,
+                                            color: Colors.black),
+                                        onPressed: () {
+                                          Navigator.popUntil(
+                                              context, ModalRoute.withName('home'));
+                                        }),
+                                  ),
+                                ),
+                                Spacer(flex: 5,),
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(right:5),
+                                    child: IconButton(
+                                      icon:Icon(FontAwesomeIcons.sync, color: Colors.black),
+                                      onPressed: (){
+                                        showDialog(
+                                            context: context,
+                                            builder: (context) {
+                                              Future.delayed(Duration(seconds: 1), () {
+                                                Navigator.pop(context);
+                                              });
+                                              return Dialog(
+                                                  backgroundColor:
+                                                  Colors.transparent,
+                                                  child: SpinKitRotatingCircle(
+                                                    color: Colors.white,
+                                                    size: 50.0,
+                                                  ));
+                                            });
+                                        if(mounted) {
+                                          setState(() {
+                                          });
+                                        }
+                                      }
+                                    ),
+                                  ),
+                                )
+                              ],
                             ),
-                          ),
                             decoration: BoxDecoration(
                                 color: Theme.of(context).canvasColor,
                                 border: Border(
@@ -270,10 +269,11 @@ class _DeliveryConfirmationPageWidgetState
                             children: <Widget>[
                               Text(
                                 "Delivery\nConfirmation",
-                                style: TextStyle(fontSize: 55),
+                                style: TextStyle(fontSize: 45),
                               ),
-                              Text("Order ID: ${order.orderID}",
-                                  style: TextStyle(fontSize: 20)),
+                              Text("Order#${order.orderID}",
+                                  style: TextStyle(
+                                      fontSize: 20,)),
                             ],
                           ),
                         ),
@@ -295,11 +295,39 @@ class _DeliveryConfirmationPageWidgetState
                                 SizedBox(
                                   height: 25,
                                 ),
-                                IconButton(
-                                  icon: icon,
-                                  iconSize:
-                                      MediaQuery.of(context).size.width * 0.2,
-                                )
+                                FutureBuilder(
+                                    future: getData(),
+                                    builder: (context, snapshot) {
+
+                                      if (!snapshot.hasData) {
+                                        return IconButton(
+                                          icon: icon,
+                                          iconSize:
+                                          MediaQuery.of(context).size.width *
+                                              0.2,
+                                        );
+                                      }
+                                      for (int i = 0;
+                                          i < snapshot.data.documents.length;
+                                          i++) {
+                                        if (snapshot.data.documents[i]
+                                                ['transactionId'] ==
+                                            order.orderID) {
+                                          if (snapshot.data.documents[i]
+                                                  ['status'] ==
+                                              "Delivered") {
+                                            delivered = true;
+                                          }
+                                        }
+                                      }
+                                      return IconButton(
+                                        icon: icon,
+                                        iconSize:
+                                            MediaQuery.of(context).size.width *
+                                                0.2,
+                                      );
+                                    }
+                                    )
                               ],
                             ),
                           ),
@@ -328,7 +356,6 @@ class _DeliveryConfirmationPageWidgetState
                                 "Delivery Confirmed",
                                 style: TextStyle(
                                   fontSize: 30,
-                                  fontFamily: "Air Americana",
                                 ),
                                 textAlign: TextAlign.center,
                               ),
@@ -339,8 +366,8 @@ class _DeliveryConfirmationPageWidgetState
                     )
                   ],
                 ),
-              );
-            }),
+              ),
+            //}),
       ),
     );
   }

@@ -9,28 +9,41 @@ import '../models/employee.dart';
 import '../models/delivery.dart';
 import '../services/edbService.dart';
 
-
-
 class DeliveryMainPageWidget extends StatefulWidget {
   final Employee employee;
   final EDBService edb;
 
   DeliveryMainPageWidget({this.employee, this.edb});
+
   @override
-  _DeliveryMainPageState createState() => _DeliveryMainPageState(employee: employee, edb: edb);
+  _DeliveryMainPageState createState() =>
+      _DeliveryMainPageState(employee: employee, edb: edb);
 }
 
 class _DeliveryMainPageState extends State<DeliveryMainPageWidget> {
   final Employee employee;
   final EDBService edb;
+
   _DeliveryMainPageState({this.employee, this.edb});
+
+  String shown = "Packages";
+  String type = "Packages";
+  String packages = "Packages";
+  String curr = "Current";
+  String history = "History";
+
+  bool packagesActivate = true;
+
+  bool currActivate = false;
+
+  bool historyActivate = false;
 
   Future getDeliveries() async {
     QuerySnapshot qn;
-    if(shown==packages) {
+    if (shown == packages) {
       var firestore = Firestore.instance;
       qn = await firestore.collection('Delivery').getDocuments();
-    } else if (shown==curr) {
+    } else if (shown == curr) {
       var firestore = Firestore.instance;
       //Change to Pending delivery when confirmed for collection
       qn = await firestore
@@ -39,7 +52,7 @@ class _DeliveryMainPageState extends State<DeliveryMainPageWidget> {
           .collection('Pending Deliveries')
           .getDocuments();
       return qn;
-    } else if (shown==history) {
+    } else if (shown == history) {
       var firestore = Firestore.instance;
       //Change to Pending delivery when confirmed for collection
       qn = await firestore
@@ -51,18 +64,21 @@ class _DeliveryMainPageState extends State<DeliveryMainPageWidget> {
     return qn;
   }
 
-  void LogOutButtonPressed(BuildContext context){    FirebaseAuth.instance.signOut();
-  Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => LoginPageWidget()));}
+  void LogOutButtonPressed(BuildContext context) {
+    FirebaseAuth.instance.signOut();
+    Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => LoginPageWidget()));
+  }
 
-  void showMoreInfo(Employee employee, BuildContext context, String type, Order order) async{
-   await showDialog(
+  void showMoreInfo(
+      Employee employee, BuildContext context, String type, Order order) async {
+    await showDialog(
         context: context,
         builder: (BuildContext context) {
           // return object of type Dialog
           return MyDialog(employee: employee, type: type, order: order);
         });
-   setState((){});
+    setState(() {});
   }
 
   void onPackagesPressed(BuildContext context) {
@@ -90,28 +106,14 @@ class _DeliveryMainPageState extends State<DeliveryMainPageWidget> {
   }
 
   Text emptyOrders() {
-    if(shown==packages) {
+    if (shown == packages) {
       return Text("Currently no delivery orders");
-    } else if (shown==curr) {
-      return Text("Currently no delivery orders in your list");
+    } else if (shown == curr) {
+      return Text("Currently no delivery orders");
     } else {
-      return Text("Delivery History is empty");
+      return Text("Delivery history is empty");
     }
   }
-
-  String shown = "Packages";
-  String type = "Packages";
-  String packages = "Packages";
-  String curr = "Current";
-  String history = "History";
-
-  bool packagesActivate = true;
-
-  bool currActivate = false;
-
-  bool historyActivate = false;
-
-  int noOfitems;
 
   @override
   Widget build(BuildContext context) {
@@ -152,25 +154,24 @@ class _DeliveryMainPageState extends State<DeliveryMainPageWidget> {
                     child: Row(
                       children: <Widget>[
                         Expanded(
-                          flex: 3,
+                          flex: 4,
                           child: Padding(
-                            padding: EdgeInsets.only(left: 15, top: 15),
+                            padding: EdgeInsets.only(left: 25, top: 10),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
                                 Text(
-                                  "${employee.lastName} ${employee.firstName}",
-                                  style: TextStyle(fontSize: 20),
-                                ),
-                                Text(
-                                  "${employee.role}",
-                                  style: TextStyle(fontSize: 15),
-                                )
+                                    "${employee.lastName} ${employee.firstName}",
+                                    style: TextStyle(fontSize: 20)),
+                                Text("${employee.role}",
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                    ))
                               ],
                             ),
                           ),
                         ),
-                        Spacer(flex: 6),
+                        Spacer(flex: 5),
                         Expanded(
                             flex: 2,
                             child: GestureDetector(
@@ -182,7 +183,7 @@ class _DeliveryMainPageState extends State<DeliveryMainPageWidget> {
                                 child: Padding(
                                   padding: EdgeInsets.only(bottom: 10),
                                   child: Text(
-                                    "Log Out",
+                                    "Logout",
                                     style: TextStyle(
                                         fontSize: 20,
                                         color: Theme.of(context).primaryColor),
@@ -202,9 +203,23 @@ class _DeliveryMainPageState extends State<DeliveryMainPageWidget> {
                     children: <Widget>[
                       Spacer(),
                       Expanded(
-                        flex: 2,
+                        flex: 3,
                         child: GestureDetector(
                           onTap: () {
+                            showDialog(
+                                context: context,
+                                builder: (context) {
+                                  Future.delayed(Duration(milliseconds: 500),
+                                      () {
+                                    Navigator.pop(context);
+                                  });
+                                  return Dialog(
+                                      backgroundColor: Colors.transparent,
+                                      child: SpinKitRotatingCircle(
+                                        color: Colors.white,
+                                        size: 50.0,
+                                      ));
+                                });
                             this.onPackagesPressed(context);
                             setState(() {});
                           },
@@ -213,9 +228,13 @@ class _DeliveryMainPageState extends State<DeliveryMainPageWidget> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: <Widget>[
-                                Text(
-                                  "Packages",
-                                  style: TextStyle(fontSize: 20),
+                                Container(
+                                  child: Text(
+                                    "Packages",
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                    ),
+                                  ),
                                 ),
                                 Padding(
                                   padding: EdgeInsets.only(top: 5.0),
@@ -234,9 +253,23 @@ class _DeliveryMainPageState extends State<DeliveryMainPageWidget> {
                       ),
                       Spacer(),
                       Expanded(
-                        flex: 2,
+                        flex: 3,
                         child: GestureDetector(
                           onTap: () {
+                            showDialog(
+                                context: context,
+                                builder: (context) {
+                                  Future.delayed(Duration(milliseconds: 500),
+                                      () {
+                                    Navigator.pop(context);
+                                  });
+                                  return Dialog(
+                                      backgroundColor: Colors.transparent,
+                                      child: SpinKitRotatingCircle(
+                                        color: Colors.white,
+                                        size: 50.0,
+                                      ));
+                                });
                             this.onCurrPressed(context);
                             setState(() {});
                           },
@@ -247,7 +280,9 @@ class _DeliveryMainPageState extends State<DeliveryMainPageWidget> {
                               children: <Widget>[
                                 Text(
                                   "Current",
-                                  style: TextStyle(fontSize: 19),
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                  ),
                                 ),
                                 Padding(
                                   padding: EdgeInsets.only(top: 5.0),
@@ -267,9 +302,23 @@ class _DeliveryMainPageState extends State<DeliveryMainPageWidget> {
                       ),
                       Spacer(),
                       Expanded(
-                        flex: 2,
+                        flex: 3,
                         child: GestureDetector(
                           onTap: () {
+                            showDialog(
+                                context: context,
+                                builder: (context) {
+                                  Future.delayed(Duration(milliseconds: 500),
+                                      () {
+                                    Navigator.pop(context);
+                                  });
+                                  return Dialog(
+                                      backgroundColor: Colors.transparent,
+                                      child: SpinKitRotatingCircle(
+                                        color: Colors.white,
+                                        size: 50.0,
+                                      ));
+                                });
                             this.onHistoryPressed(context);
                             setState(() {});
                           },
@@ -280,13 +329,15 @@ class _DeliveryMainPageState extends State<DeliveryMainPageWidget> {
                               children: <Widget>[
                                 Text(
                                   "History",
-                                  style: TextStyle(fontSize: 20),
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                  ),
                                 ),
                                 Padding(
                                   padding: EdgeInsets.only(top: 5.0),
                                   child: Container(
-                                    width:
-                                        MediaQuery.of(context).size.width * 0.13,
+                                    width: MediaQuery.of(context).size.width *
+                                        0.13,
                                     height: 2,
                                     color: historyActivate
                                         ? Theme.of(context).primaryColor
@@ -303,53 +354,55 @@ class _DeliveryMainPageState extends State<DeliveryMainPageWidget> {
                   ),
                 ),
                 Expanded(
-                  flex: 7,
+                    flex: 7,
                     child: FutureBuilder(
                         future: getDeliveries(),
                         builder: (context, snapshot) {
                           Delivery _deliveryList = new Delivery();
                           if (!snapshot.hasData)
                             return Dialog(
-                                backgroundColor:
-                                Colors.transparent,
+                                backgroundColor: Colors.transparent,
                                 child: SpinKitRotatingCircle(
                                   color: Colors.white,
                                   size: 50.0,
-                                )
-                                   );
+                                ));
                           else {
                             if (snapshot.data.documents.length == 0) {
                               return Center(
                                 child: emptyOrders(),
                               );
                             } else {
-                              for (int i = 0; i < snapshot.data.documents
-                                  .length; i++) {
+                              for (int i = 0;
+                                  i < snapshot.data.documents.length;
+                                  i++) {
                                 String orderIDTemp =
-                                snapshot.data.documents[i]['transactionId'];
-                                Map addressTemp =
-                                Map.from(snapshot.data.documents[i]['address']);
-                                String nameTemp = snapshot.data
-                                    .documents[i]['name'];
-                                DateTime dateTemp =
-                                snapshot.data.documents[i]['dateOfTransaction']
+                                    snapshot.data.documents[i]['transactionId'];
+                                Map addressTemp = Map.from(
+                                    snapshot.data.documents[i]['address']);
+                                String nameTemp =
+                                    snapshot.data.documents[i]['name'];
+                                DateTime dateTemp = snapshot
+                                    .data.documents[i]['dateOfTransaction']
                                     .toDate();
                                 List<dynamic> items = new List<dynamic>();
                                 items = snapshot.data.documents[i]['items'];
-                                double totalAmountTemp = double.parse(
-                                    snapshot.data.documents[i]['totalAmount']
-                                        .toString());
+                                double totalAmountTemp = double.parse(snapshot
+                                    .data.documents[i]['totalAmount']
+                                    .toString());
                                 String customerIDTemp =
-                                snapshot.data.documents[i]['customerId'];
+                                    snapshot.data.documents[i]['customerId'];
                                 String collectTypeTemp =
-                                snapshot.data.documents[i]['collectType'];
+                                    snapshot.data.documents[i]['collectType'];
                                 Map timeArrivalTemp;
                                 Map expectedArrivalTemp;
-                                if(shown==history) {
-                                  timeArrivalTemp = snapshot.data.documents[i]['expectedTime'];
-                                  expectedArrivalTemp = snapshot.data.documents[i]['actualTime'];
+                                if (shown == history) {
+                                  timeArrivalTemp = snapshot.data.documents[i]
+                                      ['expectedTime'];
+                                  expectedArrivalTemp =
+                                      snapshot.data.documents[i]['actualTime'];
                                 } else {
-                                  timeArrivalTemp = snapshot.data.documents[i]['timeArrival'];
+                                  timeArrivalTemp =
+                                      snapshot.data.documents[i]['timeArrival'];
                                   expectedArrivalTemp = new Map();
                                 }
                                 _deliveryList.addOrders(new Order(
@@ -374,70 +427,77 @@ class _DeliveryMainPageState extends State<DeliveryMainPageWidget> {
                                       children: <Widget>[
                                         GestureDetector(
                                           onTap: () {
-                                            this.showMoreInfo(employee, context, type, _deliveryList.getOrders(index));
+                                            this.showMoreInfo(
+                                                employee,
+                                                context,
+                                                type,
+                                                _deliveryList.getOrders(index));
                                           },
                                           child: Container(
-                                            width: MediaQuery
-                                                .of(context)
-                                                .size
-                                                .width * 0.97,
-                                            height: MediaQuery
-                                                .of(context)
-                                                .size
-                                                .height * 0.1,
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width *
+                                                0.97,
+                                            height: 105,
                                             decoration: BoxDecoration(
-                                              color: Theme
-                                                  .of(context)
+                                              color: Theme.of(context)
                                                   .primaryColor,
-                                              borderRadius: BorderRadius.circular(
-                                                  5),
+                                              borderRadius:
+                                                  BorderRadius.circular(5),
                                             ),
                                             child: Align(
                                               child: Container(
-                                                  width:
-                                                  MediaQuery
-                                                      .of(context)
-                                                      .size
-                                                      .width * 0.965,
-                                                  height: MediaQuery
-                                                      .of(context)
-                                                      .size
-                                                      .height *
-                                                      0.098,
+                                                  width: MediaQuery.of(context)
+                                                          .size
+                                                          .width *
+                                                      0.965,
+                                                  height: 100,
                                                   decoration: BoxDecoration(
-                                                      color: Theme
-                                                          .of(context)
+                                                      color: Theme.of(context)
                                                           .backgroundColor,
-                                                      borderRadius: BorderRadius
-                                                          .circular(5),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              5),
                                                       border: Border.all(
                                                           width: 1,
-                                                          color: Theme
-                                                              .of(context)
-                                                              .cardColor)),
-                                                  child: Center(
-                                                      child: Text(
-                                                          "${_deliveryList.getOrders(index)}"))),
+                                                          color:
+                                                              Theme.of(context)
+                                                                  .cardColor)),
+                                                  child: Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
+                                                    children: <Widget>[
+                                                      SizedBox(width: 100),
+                                                      Text(
+                                                        "${_deliveryList.getOrders(index)}",
+                                                        style: TextStyle(
+                                                            fontSize: 18),
+                                                      ),
+                                                    ],
+                                                  )),
                                               alignment: Alignment.topLeft,
                                             ),
                                           ),
                                         ),
-                                        index + 1 != _deliveryList.getOrdersSize()
+                                        index + 1 !=
+                                                _deliveryList.getOrdersSize()
                                             ? Container(
-                                            width: MediaQuery
-                                                .of(context)
-                                                .size
-                                                .width,
-                                            height: 15)
+                                                width: MediaQuery.of(context)
+                                                    .size
+                                                    .width,
+                                                height: 15)
                                             : Container(),
                                       ],
                                     );
-                                  }
-                              ),
+                                  }),
                             );
                           }
                         })),
-                Expanded(flex: 1,child: Container(color:Theme.of(context).canvasColor),)
+                Expanded(
+                  flex: 1,
+                  child: Container(color: Theme.of(context).canvasColor),
+                )
               ],
             ),
           ),
@@ -463,12 +523,16 @@ class _MyDialogState extends State<MyDialog> {
   Employee employee;
   String type;
   Order order;
+
   _MyDialogState({this.employee, this.type, this.order});
+
   void confirmDelivery(BuildContext context, Employee employee, Order order) {
-    Navigator.push(context,
-        MaterialPageRoute(builder: (context) => DeliveryConfirmationPageWidget(employee: employee, order: order)));
-    setState(() {
-    });
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => DeliveryConfirmationPageWidget(
+                employee: employee, order: order)));
+    setState(() {});
   }
 
   addDeliveryDialog(Employee employee, BuildContext context, Order order) {
@@ -477,7 +541,6 @@ class _MyDialogState extends State<MyDialog> {
       child: Text("Cancel"),
       onPressed: () {
         Navigator.pop(context);
-
       },
     );
     Widget continueButton = FlatButton(
@@ -486,11 +549,9 @@ class _MyDialogState extends State<MyDialog> {
         showDialog(
             context: context,
             builder: (context) {
-              Future.delayed(Duration(seconds: 3), () {
-              });
+              Future.delayed(Duration(seconds: 3), () {});
               return Dialog(
-                  backgroundColor:
-                  Colors.transparent,
+                  backgroundColor: Colors.transparent,
                   child: SpinKitRotatingCircle(
                     color: Colors.white,
                     size: 50.0,
@@ -527,8 +588,6 @@ class _MyDialogState extends State<MyDialog> {
             .delete();
 
         Navigator.popUntil(context, ModalRoute.withName('home'));
-//        Navigator.of(context).pushReplacement(MaterialPageRoute(
-//            builder: (context) => DeliveryMainPageWidget()));
         Fluttertoast.showToast(
             msg: "Successfully added to Delivery List!", fontSize: 16.0);
       },
@@ -551,14 +610,6 @@ class _MyDialogState extends State<MyDialog> {
       },
     );
   }
-
-  void addToCurr(Employee employee, BuildContext context) {
-    addDeliveryDialog(employee, context, order);
-    //Navigator.pop(context);
-  }
-
-
-
 
   @override
   void initState() {
@@ -592,7 +643,7 @@ class _MyDialogState extends State<MyDialog> {
                   0,
                   MediaQuery.of(context).size.width * 0.045),
               child: Container(
-                height: MediaQuery.of(context).size.height * 0.16,
+                height: MediaQuery.of(context).size.height * 0.15,
                 width: MediaQuery.of(context).size.width,
                 child: Align(
                     alignment: Alignment.centerLeft,
@@ -600,20 +651,68 @@ class _MyDialogState extends State<MyDialog> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Text(
-                          "OrderID: ${order.orderID}",
-                          style: TextStyle(fontSize: 40),
+                          "Order#${order.orderID}",
+                          style: TextStyle(fontSize: 30),
                         ),
                         SizedBox(
                           height: 10,
                         ),
-                        Text("Requested Delivery Timing:  ${order.expectedTimeString()}", style: TextStyle(fontSize: 17)),
+                        Row(
+                          children: <Widget>[
+                            Container(
+                                width: 130,
+                                child: Text("Delivery Timing:",
+                                    style: TextStyle(fontSize: 17))),
+                            Container(
+                              width: 150,
+                              child: Text("${order.expectedTimeString()}",
+                                  style: TextStyle(fontSize: 17)),
+                            )
+                          ],
+                        ),
                         SizedBox(
                           height: 2,
                         ),
-                        type=="History"?Text("Actual Delivered Timing: ${order.actualTimeString()}", style: TextStyle(fontSize: 17)):SizedBox(height:0),
-                        type=="History"?SizedBox(height:2):SizedBox(height:0),
-                        Text("Address: ${order.address['street']} ${order.address['unit']} S(${order.address['postalCode']})",
-                            style: TextStyle(fontSize: 17)),
+                        type == "History"
+                            ? Row(children: [
+                                Container(
+                                    width: 130,
+                                    child: Text("Delivered Timing:",
+                                        style: TextStyle(fontSize: 17))),
+                                Container(
+                                    width: 150,
+                                    child: Text("${order.actualTimeString()}",
+                                        style: TextStyle(fontSize: 17)))
+                              ])
+                            : Container(),
+                        type == "History"
+                            ? SizedBox(height: 2)
+                            : SizedBox(height: 0),
+                        SizedBox(
+                          height: 2,
+                        ),
+                        Row(
+                          children: <Widget>[
+                            Container(
+                              width: 130,
+                              child: Text("Address:",
+                                  style: TextStyle(fontSize: 17)),
+                            ),
+                            Container(
+                              width: 150,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text("${order.address['street']}",
+                                      style: TextStyle(fontSize: 17)),
+                                  Text(
+                                      "${order.address['unit']} S(${order.address['postalCode']})",
+                                      style: TextStyle(fontSize: 17)),
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
                       ],
                     )),
               ),
@@ -648,7 +747,6 @@ class _MyDialogState extends State<MyDialog> {
                           child: Text("Qty", style: TextStyle(fontSize: 20)),
                         ),
                       ),
-
                     ],
                   ),
                   SizedBox(height: 5),
@@ -682,19 +780,19 @@ class _MyDialogState extends State<MyDialog> {
                                               style: TextStyle(fontSize: 18))),
                                     ),
                                     Expanded(
-                                      flex: 2,
+                                      flex: 5,
                                       child: Container(
                                         width:
                                             MediaQuery.of(context).size.width /
                                                     8 *
                                                     4 -
                                                 30,
-                                        child: Text("${order.items[index]['name']}",
-                                            style: TextStyle(fontSize: 18)),
+                                        child: Text(
+                                            "${order.items[index]['name']}",
+                                            style: TextStyle(fontSize: 15)),
                                       ),
                                     ),
-                                    Expanded(
-                                        flex: 4, child: SizedBox(width: 10)),
+                                    Spacer(),
                                     Expanded(
                                       flex: 2,
                                       child: Container(
@@ -702,7 +800,8 @@ class _MyDialogState extends State<MyDialog> {
                                             MediaQuery.of(context).size.width /
                                                     8 +
                                                 10,
-                                        child: Text("${order.items[index]['quantity']}",
+                                        child: Text(
+                                            "${order.items[index]['quantity']}",
                                             style: TextStyle(fontSize: 18)),
                                       ),
                                     ),
@@ -728,61 +827,68 @@ class _MyDialogState extends State<MyDialog> {
                 ],
               ),
             ),
-            type=="Packages"?Expanded(
-                child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  child: Align(
-                    alignment: Alignment.center,
+            type == "Packages"
+                ? Expanded(
                     child: Container(
-                      width: MediaQuery.of(context).size.width*0.7,
-                      child: FlatButton(
-                    color: Theme.of(context).primaryColor,
-                    onPressed: () async {
-                        addDeliveryDialog(employee, context, order);},
-                    textColor: Colors.white,
-                    padding: EdgeInsets.all(0),
-                    child: Text(
-                      "Add Order to Current",
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontFamily: "Air Americana",
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-              ),
-            ),
-                  ),
-                )):type=="History"?Expanded(
-                child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  child: Align(
-                    alignment: Alignment.center,
-                  ),
-                )):
-            Expanded(
-                child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: Container(
-                      width: MediaQuery.of(context).size.width*0.7,
-                      child: FlatButton(
-                        color: Theme.of(context).primaryColor,
-                        onPressed: () => this.confirmDelivery(context, employee, order),
-                        textColor: Colors.white,
-                        padding: EdgeInsets.all(0),
-                        child: Text(
-                          "Arrived at Address",
-                          style: TextStyle(
-                            fontSize: 30,
-                            fontFamily: "Air Americana",
+                    width: MediaQuery.of(context).size.width,
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Container(
+                        width: MediaQuery.of(context).size.width * 0.7,
+                        child: FlatButton(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                          color: Theme.of(context).primaryColor,
+                          onPressed: () async {
+                            addDeliveryDialog(employee, context, order);
+                          },
+                          textColor: Colors.white,
+                          padding: EdgeInsets.all(0),
+                          child: Text(
+                            "Add order to current",
+                            style: TextStyle(
+                              fontSize: 20,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                          textAlign: TextAlign.center,
                         ),
                       ),
                     ),
-                  ),
-                ))
+                  ))
+                : type == "History"
+                    ? Expanded(
+                        child: Container(
+                        width: MediaQuery.of(context).size.width,
+                        child: Align(
+                          alignment: Alignment.center,
+                        ),
+                      ))
+                    : Expanded(
+                        child: Container(
+                        width: MediaQuery.of(context).size.width,
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: Container(
+                            width: MediaQuery.of(context).size.width * 0.7,
+                            child: FlatButton(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                              color: Theme.of(context).primaryColor,
+                              onPressed: () => this
+                                  .confirmDelivery(context, employee, order),
+                              textColor: Colors.white,
+                              padding: EdgeInsets.all(0),
+                              child: Text(
+                                "Arrived at address",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ))
           ],
         ),
       ),

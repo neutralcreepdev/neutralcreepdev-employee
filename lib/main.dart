@@ -13,7 +13,7 @@ void main() => runApp(MaterialApp(
   splashColor: blueGrey,
   cardColor: darkerGrey,
   cursorColor: maroon,
-  fontFamily: "Air Americana",
+  fontFamily: "Montserrat",
 ),
 ));
 

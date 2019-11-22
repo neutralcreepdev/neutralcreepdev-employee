@@ -81,6 +81,9 @@ flutter:
   # For details regarding fonts from package dependencies,
   # see https://flutter.io/custom-fonts/#from-packages
   fonts:
-    - family: Air Americana
+    - family: Montserrat
       fonts:
-        - asset: assets/fonts/Air Americana.ttf
+        - asset: assets/fonts/Montserrat-Bold.ttf
+    - family: MontserratI
+      fonts:
+        - asset: assets/fonts/Montserrat-Italic.ttf

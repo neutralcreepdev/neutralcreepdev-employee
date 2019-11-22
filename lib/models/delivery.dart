@@ -56,7 +56,7 @@ class Order {
         "NAME: $name\n"
         "LOCATION: ${address['street']}\n"
         "UNIT: ${address['unit']}\n"
-        "POSTAL CODE: ${address['postalCode']}\n";
+        "POSTAL CODE: ${address['postalCode']}";
   }
 
   String expectedTimeString() {

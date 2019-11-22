@@ -24,12 +24,10 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
 
 
   final _formKey = GlobalKey<FormState>();
-  final _passKey = GlobalKey<FormFieldState>();
   final _auth = AuthService();
   final _edb = EDBService();
   final emailText = TextEditingController();
   final passwordText = TextEditingController();
-  bool tick =false;
   bool isRememberMe = false;
   SharedPreferences sp;
 
@@ -128,12 +126,12 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                                   width: MediaQuery.of(context).size.width*0.4,
                                   height: MediaQuery.of(context).size.height*0.18,
                                 ),
-                                Text("Exmployee Version"),
+                                Text("Employee Version"),
                                 Padding(
                                   padding: const EdgeInsets.only(top: 25),
                                   child: Text(
                                     "LOGIN",
-                                    style: TextStyle(fontSize: 50),
+                                    style: TextStyle(fontSize: 40),
                                   ),
                                 ),
                               ],
@@ -156,7 +154,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                                 children: <Widget>[
                                   Text(
                                     "Email:",
-                                    style: TextStyle(fontSize: 27),
+                                    style: TextStyle(fontSize: 20),
                                   ),
                                   Container(
                                     width: MediaQuery.of(context).size.width * 0.85,
@@ -166,7 +164,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                                         border: OutlineInputBorder(
                                           borderRadius: BorderRadius.circular(5.0),
                                         ),
-                                        hintText: "email",
+                                        hintText: "Email",
                                       ),
                                       validator: (emailInput) {
                                         if (emailInput.isEmpty) {
@@ -203,7 +201,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                                 children: <Widget>[
                                   Text(
                                     "Password:",
-                                    style: TextStyle(fontSize: 27),
+                                    style: TextStyle(fontSize: 20),
                                   ),
                                   Container(
                                     width: MediaQuery.of(context).size.width * 0.85,
@@ -238,7 +236,6 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                                             ),
                                             Text(
                                               "Remember Me",
-                                              style: TextStyle(fontSize: 15),
                                             ),
                                           ],
                                         ),
@@ -255,10 +252,9 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                         ),
                       ),
                     ),
-                    Spacer(flex: 4,),
-                    Expanded(
-                      flex: 1,
-                      child: Container(
+                    Spacer(flex: 3,),
+                      Container(
+                        height: 50,
                         child: Center(child: Column(
                           children: <Widget>[Expanded(
                             child: Container(
@@ -293,14 +289,6 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                                                                 employee,
                                                                 edb: _edb)));
                                               } else if (employee.role == "Packer") {
-//                                              Navigator.of(context).pushAndRemoveUntil(
-//                                                  new MaterialPageRoute(
-//                                                      builder: (BuildContext context) => new PackagerHomePage(
-//                                                          employee:
-//                                                          employee,
-//                                                          auth: _auth,
-//                                                          edb: _edb)),
-//                                                      (Route<dynamic> route) => false);
                                                 _onChanged(isRememberMe);
                                                 Navigator.of(context)
                                                     .pushReplacement(
@@ -316,6 +304,9 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                                               } else{
                                                 Fluttertoast.showToast(msg: "Unable to login, please contact your manager.");
                                               }
+                                            }).catchError((error, stackTrace) {
+                                              Navigator.pop(context);
+                                              x = false;
                                             });
                                           }).catchError((error, stackTrace) {
                                             Navigator.pop(context);
@@ -329,7 +320,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                                                 color: Colors.white,
                                                 size: 50.0,
                                               )
-                                                  : Text("lame"));
+                                                  : Text("Check Authentication"));
                                         });
                                     if (x == false) {
                                       showDialog(
@@ -363,8 +354,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                                 child: Text(
                                   "Login",
                                   style: TextStyle(
-                                    fontSize: 30,
-                                    fontFamily: "Air Americana",
+                                    fontSize: 30
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
@@ -374,7 +364,6 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                           ],
                         ),),
                       ),
-                    ),
                     Spacer(flex: 2,)
                   ],
                 ) /* add child content here */,
